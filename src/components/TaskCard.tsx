@@ -138,6 +138,8 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
                   { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
                   { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-100' },
                   { bg: 'bg-cyan-50', text: 'text-cyan-600', border: 'border-cyan-100' },
+                  { bg: 'bg-accent-cyan/10', text: 'text-accent-cyan', border: 'border-accent-cyan/20' },
+                  { bg: 'bg-accent-purple/10', text: 'text-accent-purple', border: 'border-accent-purple/20' },
                 ];
                 const colorIndex = tag.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
                 const color = colors[colorIndex];

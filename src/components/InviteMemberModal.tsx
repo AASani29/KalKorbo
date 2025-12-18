@@ -25,16 +25,29 @@ export function InviteMemberModal({ project, onClose, onInviteSent }: InviteMemb
         throw new Error('Not authenticated');
       }
 
+      // Check if user exists in profiles
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (profileError || !profileData) {
+        showToast('error', 'Only registered users can be invited to projects.');
+        setLoading(false);
+        return;
+      }
+
       // Check if user is already a member
       const { data: existingMember } = await supabase
         .from('project_members')
         .select('id')
         .eq('project_id', project.id)
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', profileData.id)
+        .maybeSingle();
 
       if (existingMember) {
-        showToast('info', 'This user is already a member');
+        showToast('info', 'This user is already a member of the project.');
         setLoading(false);
         return;
       }
@@ -57,18 +70,7 @@ export function InviteMemberModal({ project, onClose, onInviteSent }: InviteMemb
         return;
       }
 
-      // Check if user exists in profiles
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email.toLowerCase())
-        .single();
 
-      if (profileError || !profileData) {
-        showToast('error', 'Only registered users can be invited to projects.');
-        setLoading(false);
-        return;
-      }
 
       // Create invitation
       const { error } = await supabase.from('project_invitations').insert({
@@ -98,12 +100,12 @@ export function InviteMemberModal({ project, onClose, onInviteSent }: InviteMemb
             <h2 className="text-2xl font-bold text-gray-900">Invite Team Member</h2>
             <p className="text-sm text-gray-600 mt-1">to {project.name}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-          >
-            <X className="w-5 h-5" />
-          </button>
+            <button
+              onClick={onClose}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-brand-50 rounded-lg transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
         </div>
 
         <form onSubmit={handleInvite} className="space-y-4">
@@ -117,7 +119,7 @@ export function InviteMemberModal({ project, onClose, onInviteSent }: InviteMemb
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                 placeholder="colleague@example.com"
                 required
               />
@@ -138,7 +140,7 @@ export function InviteMemberModal({ project, onClose, onInviteSent }: InviteMemb
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 shadow-lg shadow-brand-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

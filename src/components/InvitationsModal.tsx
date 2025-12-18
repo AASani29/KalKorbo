@@ -151,7 +151,7 @@ export function InvitationsModal({ onClose, onInvitationAccepted }: InvitationsM
                               <div className="flex items-center gap-2">
                                 <div
                                   className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-bold overflow-hidden border-2 border-white shadow-sm"
-                                  style={{ backgroundColor: invitation.inviter_avatar_color || '#0891b2' }}
+                                  style={{ backgroundColor: invitation.inviter_avatar_color || '#3455a0' }}
                                 >
                                   {invitation.inviter_avatar_url ? (
                                     <img src={invitation.inviter_avatar_url} alt="Inviter" className="w-full h-full object-cover" />

@@ -44,18 +44,19 @@ export function Auth() {
         {/* Left Side: Branding */}
         <div className="relative bg-brand-100 p-12 md:p-20 flex flex-col justify-center overflow-hidden group">
           {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full -mr-48 -mt-48 blur-3xl opacity-50 group-hover:scale-110 transition-transform duration-1000" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-200 rounded-full -ml-32 -mb-32 blur-3xl opacity-30 group-hover:scale-125 transition-transform duration-1000" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-accent-cyan/20 rounded-full -mr-48 -mt-48 blur-3xl group-hover:scale-110 transition-transform duration-1000" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-purple/10 rounded-full -ml-32 -mb-32 blur-3xl group-hover:scale-125 transition-transform duration-1000" />
+          <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-accent-cyan/10 rounded-full -ml-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700" />
           
-          <div className="flex items-center justify-start ml-[-3rem]">
-              <img src="/upscalemedia-transformed.png" alt="Kando" className="h-56 w-auto" />
+          <div className="flex items-center justify-center ml-[-10rem] ">
+              <img src="/Logo.png" alt="KalKorbo" className="h-56 w-auto" />
             </div>
           <div className="relative z-10 space-y-8">
             
             
             <div className="space-y-4">
               <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight leading-tight">
-                Welcome to <span className="text-brand-600">Kando</span>
+                Welcome to <span className="text-[#3455a0]">KalKorbo</span>
               </h1>
               <p className="text-lg md:text-xl text-gray-600 font-medium max-w-md leading-relaxed">
                 Streamline your workflow with precision. Manage tasks, collaborate with your team, and watch your productivity soar.
@@ -77,7 +78,7 @@ export function Auth() {
           {/* Bottom Quote/Funny Note */}
           <div className="absolute bottom-12 left-12 md:left-20 right-12 md:right-20 z-10">
             <p className="text-xs font-bold text-brand-800/40 uppercase tracking-[0.2em]">
-              Don't just work, Kando it.
+              Don't just work, KalKorbo it.
             </p>
           </div>
         </div>
@@ -188,7 +189,7 @@ export function Auth() {
                 ) : (
                   <>
                     {isLogin ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
-                    {isLogin ? 'Sign In to Kando' : 'Join Kando Today'}
+                    {isLogin ? 'Sign In to KalKorbo' : 'Join KalKorbo Today'}
                   </>
                 )}
               </button>
@@ -196,7 +197,7 @@ export function Auth() {
 
             <div className="text-center">
               <p className="text-xs text-gray-500 font-medium">
-                {isLogin ? "New to Kando? " : 'Already have an account? '}
+                {isLogin ? "New to KalKorbo? " : 'Already have an account? '}
                 <button
                   onClick={() => {
                     setIsLogin(!isLogin);

@@ -118,17 +118,17 @@ export function HomePage({
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-brand-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-white">
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-accent-cyan rounded-xl flex items-center justify-center shadow-lg border-2 border-white">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
             </div>
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-50 rounded-full text-[10px] font-bold text-brand-600 uppercase tracking-widest">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent-purple/10 rounded-full text-[10px] font-bold text-accent-purple uppercase tracking-widest">
                 <Sparkles className="w-3 h-3" />
                 Welcome Back
               </div>
               <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight">
-                Welcome to Kando, <br />
+                Welcome to KalKorbo, <br />
                 <span className="text-brand-600">{profile?.full_name?.split(' ')[0]}</span>
               </h1>
               <p className="text-gray-500 text-lg font-medium flex items-center gap-2">
@@ -285,25 +285,25 @@ export function HomePage({
 
           {/* Sidebar Section */}
           <div className="lg:col-span-4 flex flex-col gap-8">
-            <div className="flex-1 bg-brand-600 rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
+            <div className="flex-1 bg-accent-purple rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-150 transition-transform duration-1000" />
               
               <div className="relative z-10 h-full flex flex-col justify-between">
                 <div className="space-y-6">
-                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                  <div className="w-12 h-12 bg-accent-cyan/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
                     <Quote className="w-6 h-6 text-white" />
                   </div>
                   <div className="space-y-4">
                     <h3 className="text-xl font-bold">Did you know?</h3>
                     <p className="text-brand-50 text-lg font-medium leading-relaxed italic">
-                      "Kando means 'Cry' in Bangla. We named it this because we know you'll cry seeing how much work you have left!"
+                      "KalKorbo means 'I'll do it tomorrow' in Bangla. Because we know that's when you're actually going to do those tasks!"
                     </p>
                   </div>
                 </div>
 
                 <div className="pt-8 flex items-center gap-4">
                   <div className="relative">
-                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md animate-bounce">
+                    <div className="w-12 h-12 bg-accent-cyan/20 rounded-full flex items-center justify-center backdrop-blur-md animate-bounce">
                       <Frown className="w-6 h-6 text-white" />
                     </div>
                     {/* Tear animation */}
@@ -311,8 +311,8 @@ export function HomePage({
                     <div className="absolute top-8 right-3 w-1 h-2 bg-brand-200 rounded-full animate-ping delay-300" />
                   </div>
                   <div>
-                    <p className="text-xs font-black uppercase tracking-widest opacity-60">The Kando Team</p>
-                    <p className="text-[10px] font-bold opacity-40 italic">With love and tears</p>
+                    <p className="text-xs font-black uppercase tracking-widest opacity-60">The KalKorbo Team</p>
+                    <p className="text-[10px] font-bold opacity-40 italic">With love and procrastination</p>
                   </div>
                 </div>
               </div>
@@ -339,7 +339,7 @@ export function HomePage({
         {/* Footer Note */}
         <footer className="pt-12 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em]">
-            Don't just work, <span className="text-brand-600">Kando it.</span>
+            Don't just work, <span className="text-brand-600">KalKorbo it.</span>
           </p>
           <div className="flex items-center gap-8">
             <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Version 2.0.4</span>

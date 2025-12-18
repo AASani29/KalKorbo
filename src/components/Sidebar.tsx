@@ -52,7 +52,7 @@ export function Sidebar({
             {!isCollapsed ? (
               <>
                 <div className="flex items-center gap-3">
-                  <img src="/Daekho.svg" alt="Kando" className="h-14 w-auto" />
+                  <img src="/Daekho1.svg" alt="KalKorbo" className="h-14 w-auto" />
                 </div>
                 <button
                   onClick={() => setIsCollapsed(!isCollapsed)}
@@ -242,7 +242,7 @@ export function Sidebar({
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm overflow-hidden border-2 border-transparent group-hover:border-brand-600 transition-all"
                 style={{ 
-                  backgroundColor: profile?.avatar_color || '#0891b2'
+                  backgroundColor: profile?.avatar_color || '#3455a0'
                 }}
               >
                 {profile?.avatar_url ? (

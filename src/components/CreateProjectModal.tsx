@@ -10,14 +10,14 @@ type CreateProjectModalProps = {
 };
 
 const PROJECT_COLORS = [
-  '#3B82F6',
-  '#10B981',
-  '#F59E0B',
-  '#EF4444',
-  '#8B5CF6',
-  '#EC4899',
-  '#14B8A6',
-  '#F97316',
+  '#3455a0', // Primary Brand
+  '#80dbe4', // Accent Cyan
+  '#593465', // Accent Purple
+  '#10B981', // Emerald
+  '#F59E0B', // Amber
+  '#EF4444', // Rose
+  '#8B5CF6', // Violet
+  '#EC4899', // Pink
 ];
 
 export function CreateProjectModal({ onClose, onProjectCreated }: CreateProjectModalProps) {
@@ -29,13 +29,13 @@ export function CreateProjectModal({ onClose, onProjectCreated }: CreateProjectM
   const [liveUrl, setLiveUrl] = useState('');
   const [selectedColor, setSelectedColor] = useState(PROJECT_COLORS[0]);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteEmails, setInviteEmails] = useState<string[]>([]);
+  const [invitees, setInvitees] = useState<{ email: string; id: string }[]>([]);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const addInviteEmail = async () => {
-    if (inviteEmail && !inviteEmails.includes(inviteEmail)) {
+    if (inviteEmail && !invitees.some(i => i.email === inviteEmail.toLowerCase())) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)) {
         showToast('error', 'Please enter a valid email address');
         return;
@@ -60,7 +60,7 @@ export function CreateProjectModal({ onClose, onProjectCreated }: CreateProjectM
           return;
         }
 
-        setInviteEmails([...inviteEmails, inviteEmail.toLowerCase()]);
+        setInvitees([...invitees, { email: inviteEmail.toLowerCase(), id: data.id }]);
         setInviteEmail('');
       } catch (err) {
         showToast('error', 'User not found. They must have an account first.');
@@ -70,7 +70,7 @@ export function CreateProjectModal({ onClose, onProjectCreated }: CreateProjectM
   };
 
   const removeInviteEmail = (email: string) => {
-    setInviteEmails(inviteEmails.filter((e) => e !== email));
+    setInvitees(invitees.filter((i) => i.email !== email));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,11 +103,12 @@ export function CreateProjectModal({ onClose, onProjectCreated }: CreateProjectM
       });
 
       // 3. Send Invitations
-      if (inviteEmails.length > 0) {
-        const invitations = inviteEmails.map((email) => ({
+      if (invitees.length > 0) {
+        const invitations = invitees.map((invitee) => ({
           project_id: projectData.id,
           inviter_id: profile?.id,
-          invitee_email: email,
+          invitee_email: invitee.email,
+          invitee_id: invitee.id,
         }));
 
         const { error: inviteError } = await supabase
@@ -263,23 +264,23 @@ export function CreateProjectModal({ onClose, onProjectCreated }: CreateProjectM
               </div>
 
               <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-hide">
-                {inviteEmails.length === 0 ? (
+                {invitees.length === 0 ? (
                   <div className="py-8 text-center border-2 border-dashed border-gray-200 rounded-2xl">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">No invites added yet</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {inviteEmails.map((email) => (
-                      <div key={email} className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-gray-100 group">
+                    {invitees.map((invitee) => (
+                      <div key={invitee.email} className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-gray-100 group">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="w-6 h-6 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
                             <Mail className="w-3 h-3 text-brand-600" />
                           </div>
-                          <span className="text-xs font-bold text-gray-700 truncate">{email}</span>
+                          <span className="text-xs font-bold text-gray-700 truncate">{invitee.email}</span>
                         </div>
                         <button
                           type="button"
-                          onClick={() => removeInviteEmail(email)}
+                          onClick={() => removeInviteEmail(invitee.email)}
                           className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

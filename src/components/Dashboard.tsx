@@ -33,11 +33,11 @@ export function Dashboard({
   const [isMember, setIsMember] = useState(false);
   const [projectMembers, setProjectMembers] = useState<any[]>([]);
   const [showProfile, setShowProfile] = useState(() => {
-    return localStorage.getItem('kando_show_profile') === 'true';
+    return localStorage.getItem('kalkorbo_show_profile') === 'true';
   });
 
   useEffect(() => {
-    localStorage.setItem('kando_show_profile', showProfile.toString());
+    localStorage.setItem('kalkorbo_show_profile', showProfile.toString());
   }, [showProfile]);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export function Dashboard({
     if (selectedProject) {
       checkMembership();
       loadProjectMembers();
-      localStorage.setItem('kando_project_id', selectedProject.id);
+      localStorage.setItem('kalkorbo_project_id', selectedProject.id);
     }
   }, [selectedProject]);
 
@@ -280,7 +280,7 @@ export function Dashboard({
                   <Sparkles className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Welcome to Kando
+                  Welcome to KalKorbo
                 </h3>
                 <p className="text-sm text-gray-500">
                   Select a project from the sidebar or create a new one to start managing your tasks.
@@ -320,6 +320,7 @@ export function Dashboard({
           project={selectedProject}
           onClose={() => setShowManageMembers(false)}
           onInviteMember={() => setShowInviteMember(true)}
+          onMembersChange={loadProjectMembers}
         />
       )}
 
