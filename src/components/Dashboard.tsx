@@ -8,15 +8,14 @@ import { ManageMembersModal } from './ManageMembersModal';
 import { InvitationsModal } from './InvitationsModal';
 import { InviteMemberModal } from './InviteMemberModal';
 import { ProfilePage } from './ProfilePage';
+import { HomePage } from './HomePage';
 import { Sparkles, Github, Globe } from 'lucide-react';
 
 export function Dashboard({ 
-  onGoHome, 
   initialShowCreateProject = false,
   initialProjectId = null,
   initialTaskId = null
 }: { 
-  onGoHome: () => void;
   initialShowCreateProject?: boolean;
   initialProjectId?: string | null;
   initialTaskId?: string | null;
@@ -24,6 +23,7 @@ export function Dashboard({
   const { profile } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(initialTaskId);
   const [showCreateProject, setShowCreateProject] = useState(initialShowCreateProject);
   const [showManageMembers, setShowManageMembers] = useState(false);
   const [showInvitations, setShowInvitations] = useState(false);
@@ -67,11 +67,7 @@ export function Dashboard({
           const project = data.find(p => p.id === initialProjectId);
           if (project) {
             setSelectedProject(project);
-          } else if (data.length > 0 && !selectedProject) {
-            setSelectedProject(data[0]);
           }
-        } else if (data.length > 0 && !selectedProject) {
-          setSelectedProject(data[0]);
         }
       }
     } catch (error) {
@@ -150,6 +146,20 @@ export function Dashboard({
     loadPendingInvitations();
   };
 
+  const handleTaskClick = (projectId: string, taskId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      setSelectedProject(project);
+      setActiveTaskId(taskId);
+    }
+  };
+
+  const handleGoHome = () => {
+    setSelectedProject(null);
+    setActiveTaskId(null);
+    localStorage.removeItem('kalkorbo_project_id');
+  };
+
   return (
     <div className="flex h-screen bg-gray-50/50">
       {/* Sidebar */}
@@ -161,7 +171,7 @@ export function Dashboard({
         onManageMembers={() => setShowManageMembers(true)}
         onShowInvitations={() => setShowInvitations(true)}
         onShowProfile={() => setShowProfile(true)}
-        onGoHome={onGoHome}
+        onGoHome={handleGoHome}
         pendingInvitationsCount={pendingInvitationsCount}
       />
 
@@ -274,19 +284,10 @@ export function Dashboard({
               </div>
             </div>
           ) : !selectedProject ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-md">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Welcome to KalKorbo
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Select a project from the sidebar or create a new one to start managing your tasks.
-                </p>
-              </div>
-            </div>
+            <HomePage 
+              onStartProject={() => setShowCreateProject(true)}
+              onTaskClick={handleTaskClick}
+            />
           ) : !isMember ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-md">
@@ -302,7 +303,7 @@ export function Dashboard({
               </div>
             </div>
           ) : (
-            <TaskBoard project={selectedProject} initialTaskId={initialTaskId} />
+            <TaskBoard project={selectedProject} initialTaskId={activeTaskId} key={selectedProject.id + (activeTaskId || '')} />
           )}
         </main>
       </div>

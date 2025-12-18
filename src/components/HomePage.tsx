@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 import { 
-  LayoutGrid, 
-  CheckCircle2, 
-  Clock, 
+  CheckCircle2,
+  Clock,
   AlertCircle, 
   Calendar,
-  ArrowRight,
-  Sparkles,
   Frown,
   Quote,
   Plus,
@@ -17,11 +14,9 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 
 export function HomePage({ 
-  onGoToDashboard,
   onStartProject,
-  onTaskClick
+  onTaskClick,
 }: { 
-  onGoToDashboard: () => void;
   onStartProject: () => void;
   onTaskClick: (projectId: string, taskId: string) => void;
 }) {
@@ -30,8 +25,7 @@ export function HomePage({
     totalTasks: 0,
     completedTasks: 0,
     pendingTasks: 0,
-    highPriority: 0,
-    totalProjects: 0
+    highPriority: 0
   });
   const [tasks, setTasks] = useState<any[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -49,18 +43,12 @@ export function HomePage({
 
       setTasks(allTasks || []);
 
-      const { data: projects } = await supabase
-        .from('project_members')
-        .select('id')
-        .eq('user_id', profile?.id);
-
       if (allTasks) {
         setStats({
           totalTasks: allTasks.length,
           completedTasks: allTasks.filter(t => t.status === 'done').length,
           pendingTasks: allTasks.filter(t => t.status !== 'done').length,
-          highPriority: allTasks.filter(t => t.priority === 'high' && t.status !== 'done').length,
-          totalProjects: projects?.length || 0
+          highPriority: allTasks.filter(t => t.priority === 'high' && t.status !== 'done').length
         });
       }
     } catch (error) {
@@ -69,14 +57,6 @@ export function HomePage({
   };
 
   const cards = [
-    { 
-      label: 'Active Projects', 
-      value: stats.totalProjects, 
-      icon: LayoutGrid, 
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      description: 'Projects you are part of'
-    },
     { 
       label: 'Tasks to Do', 
       value: stats.pendingTasks, 
@@ -104,117 +84,87 @@ export function HomePage({
   ];
 
   return (
-    <div className="min-h-screen bg-white p-6 md:p-12">
-      <div className="max-w-6xl mx-auto space-y-16">
+    <div className="min-h-screen bg-gray-50/50 p-6 md:p-10 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 -mr-40 -mt-40 w-[600px] h-[600px] bg-brand-100/40 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -ml-40 -mb-40 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[100px] pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto space-y-12 relative z-10">
         
-        {/* Simple & Elegant Header */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div className="flex flex-col md:flex-row md:items-center gap-8">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl bg-brand-50">
+        {/* Simplified Header */}
+        {/* Premium Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-8 border-b border-gray-100/50">
+          <div className="flex items-center gap-6">
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-brand-300 to-accent-purple rounded-full opacity-30 group-hover:opacity-100 transition duration-500 blur"></div>
+              <div className="relative w-20 h-20 rounded-full overflow-hidden bg-white border-2 border-white ring-1 ring-gray-100">
                 <img 
                   src={profile?.avatar_url || '/male 1.svg'} 
                   alt="Profile" 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-accent-cyan rounded-xl flex items-center justify-center shadow-lg border-2 border-white">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
             </div>
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent-purple/10 rounded-full text-[10px] font-bold text-accent-purple uppercase tracking-widest">
-                <Sparkles className="w-3 h-3" />
-                Welcome Back
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+                  Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-accent-purple">{profile?.full_name?.split(' ')[0]}</span>
+                </h1>
+                <div className="px-3 py-1 bg-brand-50 rounded-full border border-brand-100 hidden md:block opacity-0">
+                  {/* Spacer to keep alignment identical but invisible */}
+                  <span className="text-[10px] font-bold text-transparent uppercase tracking-wider">Pro Plan</span>
+                </div>
               </div>
-              <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight">
-                Welcome to KalKorbo, <br />
-                <span className="text-brand-600">{profile?.full_name?.split(' ')[0]}</span>
-              </h1>
-              <p className="text-gray-500 text-lg font-medium flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-gray-400" />
+              <p className="text-gray-500 font-medium flex items-center gap-2 text-sm">
+                <Calendar className="w-4 h-4 text-brand-400" />
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </p>
             </div>
           </div>
           
-          <button
-            onClick={onGoToDashboard}
-            className="group relative px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-brand-600 transition-all duration-300 flex items-center gap-3 overflow-hidden"
-          >
-            <span className="relative z-10">Go to Dashboard</span>
-            <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-400 to-brand-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </button>
+          
+          <div className="flex items-center gap-4">
+             {/* Actions can go here if needed */}
+          </div>
         </header>
 
-        {/* Redesigned Stats Section - More Integrated & Premium */}
-        <div className="bg-gray-50/50 rounded-[3rem] p-10 border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-            {cards.map((card, i) => (
-              <div key={i} className="relative group">
-                {i !== 0 && <div className="hidden lg:block absolute -left-6 top-1/2 -translate-y-1/2 w-px h-12 bg-gray-200" />}
-                <div className="space-y-4">
-                  <div className={`w-12 h-12 ${card.bgColor} ${card.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500`}>
-                    <card.icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{card.label}</p>
-                    <div className="flex items-baseline gap-2">
-                      <h3 className="text-4xl font-black text-gray-900">{card.value}</h3>
-                      <span className="text-xs font-bold text-gray-400">total</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 font-medium leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {card.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Content Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        {/* New 2-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          {/* Calendar Section - Resized & Repositioned */}
+          {/* Main Column (Left/Center) - Calendar & Tasks */}
           <div className="lg:col-span-8 space-y-8">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-brand-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">Your Schedule</h2>
-              </div>
-              <div className="flex items-center gap-4 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Your Schedule</h2>
+              <div className="flex items-center gap-2 bg-white p-1 rounded-xl shadow-sm border border-gray-100">
                 <button 
                   onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                  className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-400 hover:text-gray-900"
+                  className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-500 hover:text-gray-900"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-sm font-bold text-gray-900 px-2 min-w-[120px] text-center uppercase tracking-widest">
+                <span className="text-sm font-bold text-gray-900 px-3 min-w-[100px] text-center">
                   {currentMonth.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                 </span>
                 <button 
                   onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                  className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-400 hover:text-gray-900"
+                  className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-500 hover:text-gray-900"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <div className="bg-brand-50/40 rounded-[3rem] border border-brand-100/50 shadow-sm overflow-hidden backdrop-blur-sm">
+            <div className="bg-white/30 backdrop-blur-md rounded-[3rem] p-5 border-2 border-brand-100 shadow-xl min-h-fit pb-6">
               {/* Calendar Grid */}
-              <div className="grid grid-cols-7 border-b border-brand-100/50 bg-brand-100/20">
+              <div className="grid grid-cols-7 mb-2">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="py-4 text-center text-[11px] font-black text-brand-600 uppercase tracking-[0.2em]">
+                  <div key={day} className="text-center text-[10px] font-black text-brand-600 uppercase tracking-widest py-2">
                     {day}
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-7">
+              
+              <div className="grid grid-cols-7 gap-2 auto-rows-fr">
                 {(() => {
                   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
                   const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay();
@@ -225,8 +175,8 @@ export function HomePage({
                   // Previous month days
                   for (let i = firstDayOfMonth - 1; i >= 0; i--) {
                     cells.push(
-                      <div key={`prev-${i}`} className="h-28 p-3 border-r border-b border-brand-100/20 bg-brand-50/10 opacity-40">
-                        <span className="text-xs font-bold text-brand-400">{prevMonthDays - i}</span>
+                      <div key={`prev-${i}`} className="min-h-[120px] p-3 rounded-3xl bg-gray-50/50 border border-transparent opacity-40 grayscale flex flex-col items-center">
+                        <span className="text-xs font-bold text-gray-400">{prevMonthDays - i}</span>
                       </div>
                     );
                   }
@@ -238,115 +188,159 @@ export function HomePage({
                     const isToday = new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i).toDateString();
                     
                     cells.push(
-                      <div key={i} className={`h-28 p-3 border-r border-b border-brand-100/20 hover:bg-white/80 transition-colors relative group ${isToday ? 'bg-white shadow-sm' : ''}`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`text-xs font-bold ${isToday ? 'w-7 h-7 bg-brand-600 text-white rounded-full flex items-center justify-center shadow-lg' : 'text-gray-900'}`}>
+                      <div 
+                        key={i} 
+                        className={`min-h-[90px] p-2 rounded-2xl border transition-all duration-300 group flex flex-col gap-1.5 relative overflow-hidden ${
+                          isToday 
+                            ? 'bg-brand-900 text-white border-brand-900 shadow-lg shadow-brand-900/20' 
+                            : 'bg-white/60 border-white/50 hover:bg-white hover:scale-[1.02] hover:shadow-lg hover:shadow-brand-500/10'
+                        }`}
+                      >
+                        {isToday && (
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-500/40 to-accent-cyan/20 rounded-full -mr-16 -mt-16 blur-xl" />
+                        )}
+                        
+                        <div className="flex items-center justify-between relative z-10">
+                          <span className={`text-xs font-black ${isToday ? 'text-white' : 'text-brand-900'}`}>
                             {i}
                           </span>
+                          {dayTasks.length > 0 && (
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                              isToday ? 'bg-white/10 text-brand-50 border border-white/10' : 'bg-brand-50 text-brand-600'
+                            }`}>
+                              {dayTasks.length}
+                            </span>
+                          )}
                         </div>
-                        <div className="space-y-1.5 overflow-y-auto max-h-[60px] scrollbar-hide">
-                          {dayTasks.map((task, idx) => (
+                        
+                        <div className="space-y-1 relative z-10 overflow-hidden">
+                          {dayTasks.slice(0, 2).map((task, idx) => (
                             <button 
                               key={idx} 
                               onClick={() => onTaskClick(task.project_id, task.id)}
-                              className={`w-full text-left px-2 py-1 rounded-md text-[10px] font-bold truncate border transition-all hover:scale-[1.02] active:scale-95 ${
-                                task.status === 'done' 
-                                  ? 'bg-emerald-50 text-emerald-600 border-emerald-100 opacity-60' 
-                                  : task.priority === 'high'
-                                  ? 'bg-rose-50 text-rose-600 border-rose-100'
-                                  : 'bg-blue-50 text-blue-600 border-blue-100'
+                              className={`w-full text-left p-1 rounded-lg text-[9px] font-bold truncate transition-all flex items-center gap-1.5 group/task ${
+                                isToday
+                                  ? 'hover:bg-white/10 text-brand-100 hover:text-white'
+                                  : 'hover:bg-brand-50 text-brand-700/70 hover:text-brand-700'
                               }`}
-                              title={`Click to view: ${task.title}`}
+                              title={task.title}
                             >
-                              {task.title}
+                              <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                task.status === 'done' ? 'bg-emerald-400' :
+                                task.priority === 'high' ? 'bg-rose-400' : 'bg-brand-400'
+                              }`} />
+                              <span className="truncate opacity-90 group-hover/task:opacity-100">{task.title}</span>
                             </button>
                           ))}
+                          {dayTasks.length > 2 && (
+                            <div className={`text-[9px] text-center font-bold ${isToday ? 'text-brand-300' : 'text-brand-300'}`}>
+                              +{dayTasks.length - 2} more
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
                   }
                   
                   // Next month days
-                  const totalCells = cells.length;
-                  const remainingCells = 42 - totalCells;
-                  for (let i = 1; i <= remainingCells; i++) {
-                    cells.push(
-                      <div key={`next-${i}`} className="h-28 p-3 border-r border-b border-brand-100/20 bg-brand-50/10 opacity-40">
-                        <span className="text-xs font-bold text-brand-400">{i}</span>
-                      </div>
-                    );
-                  }
+                   const totalCells = cells.length;
+                   const remainingCells = 42 - totalCells;
+                   for (let i = 1; i <= remainingCells; i++) {
+                     cells.push(
+                        <div key={`next-${i}`} className="min-h-[90px] p-2 rounded-2xl bg-gray-50/50 border border-transparent opacity-40 grayscale flex flex-col items-center">
+                         <span className="text-xs font-bold text-gray-400">{i}</span>
+                       </div>
+                     );
+                   }
                   
                   return cells;
                 })()}
               </div>
             </div>
+
+            {/* Removed Your Projects Section */}
           </div>
 
-          {/* Sidebar Section */}
-          <div className="lg:col-span-4 flex flex-col gap-8">
-            <div className="flex-1 bg-accent-purple rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-150 transition-transform duration-1000" />
-              
-              <div className="relative z-10 h-full flex flex-col justify-between">
-                <div className="space-y-6">
-                  <div className="w-12 h-12 bg-accent-cyan/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
-                    <Quote className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-bold">Did you know?</h3>
-                    <p className="text-brand-50 text-lg font-medium leading-relaxed italic">
-                      "KalKorbo means 'I'll do it tomorrow' in Bangla. Because we know that's when you're actually going to do those tasks!"
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-8 flex items-center gap-4">
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-accent-cyan/20 rounded-full flex items-center justify-center backdrop-blur-md animate-bounce">
-                      <Frown className="w-6 h-6 text-white" />
-                    </div>
-                    {/* Tear animation */}
-                    <div className="absolute top-8 left-3 w-1 h-2 bg-brand-200 rounded-full animate-ping" />
-                    <div className="absolute top-8 right-3 w-1 h-2 bg-brand-200 rounded-full animate-ping delay-300" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-widest opacity-60">The KalKorbo Team</p>
-                    <p className="text-[10px] font-bold opacity-40 italic">With love and procrastination</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Action Card */}
+          {/* Right Sidebar - Stats & Actions */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Action Card First for Quick Access */}
             <button 
               onClick={onStartProject}
-              className="w-full bg-gray-900 rounded-[2.5rem] p-8 text-white group cursor-pointer hover:bg-brand-600 transition-colors duration-500 text-left"
+              className="w-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-[2rem] p-8 text-white shadow-xl shadow-gray-200 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group text-left relative overflow-hidden"
             >
-              <div className="flex items-center justify-between">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-brand-500/20 transition-colors" />
+              <div className="relative z-10 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-brand-100 transition-colors">Next Step</p>
-                  <h4 className="text-lg font-bold mt-1">Start a New Project</h4>
+                  <h4 className="text-2xl font-bold text-white group-hover:text-brand-200 transition-colors">Start Project</h4>
+                  <p className="text-sm text-gray-400 mt-2 font-medium group-hover:text-gray-300">Create a new workspace</p>
                 </div>
-                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white group-hover:text-brand-600 transition-all">
-                  <Plus className="w-5 h-5" />
+                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white backdrop-blur-md group-hover:bg-brand-500 group-hover:text-white transition-all duration-300 border border-white/5">
+                  <Plus className="w-7 h-7" />
                 </div>
               </div>
             </button>
+
+            {/* Stats Vertical Stack */}
+            <div className="grid grid-cols-1 gap-4">
+              {cards.map((card, i) => (
+                <div key={i} className={`bg-white/60 backdrop-blur-md p-5 rounded-[2rem] border border-white/50 shadow-sm hover:shadow-lg transition-all duration-300 group flex items-center justify-between`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 ${card.bgColor} ${card.color} rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-300`}>
+                      <card.icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{card.label}</p>
+                      <h3 className="text-2xl font-black text-gray-900">{card.value}</h3>
+                    </div>
+                  </div>
+                  <div className={`h-1.5 w-16 rounded-full ${card.color.replace('text-', 'bg-')} opacity-20 group-hover:opacity-100 transition-opacity`}></div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quote Card */}
+            <div className="bg-gradient-to-br from-brand-700 to-brand-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden group shadow-xl shadow-brand-900/20">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl group-hover:scale-150 transition-transform duration-1000" />
+              
+              <div className="relative z-10 flex flex-col gap-6">
+                <div className="flex items-start justify-between">
+                  <div className="w-10 h-10 bg-brand-500/30 rounded-xl flex items-center justify-center backdrop-blur-md border border-brand-400/20">
+                    <Quote className="w-5 h-5 text-brand-100" />
+                  </div>
+                  <div className="px-3 py-1 bg-brand-950/30 rounded-full backdrop-blur-sm border border-brand-400/10">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-100">Daily Fact</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <p className="text-brand-50 text-base font-medium leading-relaxed italic">
+                    "KalKorbo means 'I'll do it tomorrow' in Bangla. Because we know that's when you're actually going to do those tasks!"
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-brand-500/30 rounded-full flex items-center justify-center backdrop-blur-md animate-bounce border border-brand-400/20">
+                      <Frown className="w-4 h-4 text-brand-100" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-brand-200">The KalKorbo Team</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        {/* Footer Note */}
-        <footer className="pt-12 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em]">
-            Don't just work, <span className="text-brand-600">KalKorbo it.</span>
-          </p>
-          <div className="flex items-center gap-8">
-            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Version 2.0.4</span>
-            <div className="flex gap-4">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">System Operational</span>
-            </div>
+        {/* Minimal Footer */}
+        <footer className="pt-8 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400 font-bold uppercase tracking-widest">
+          <p>KalKorbo 2.0</p>
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>Online</span>
           </div>
         </footer>
 

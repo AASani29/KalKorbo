@@ -91,6 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
+        // Force sign out if profile creation fails so user isn't stuck with a valid session but no profile
+        await supabase.auth.signOut();
         throw new Error(`Account created, but failed to set up profile: ${profileError.message}`);
       }
 
