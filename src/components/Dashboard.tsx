@@ -32,7 +32,13 @@ export function Dashboard({
   const [pendingInvitationsCount, setPendingInvitationsCount] = useState(0);
   const [isMember, setIsMember] = useState(false);
   const [projectMembers, setProjectMembers] = useState<any[]>([]);
-  const [showProfile, setShowProfile] = useState(false);
+  const [showProfile, setShowProfile] = useState(() => {
+    return localStorage.getItem('kando_show_profile') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('kando_show_profile', showProfile.toString());
+  }, [showProfile]);
 
   useEffect(() => {
     loadProjects();
@@ -43,6 +49,7 @@ export function Dashboard({
     if (selectedProject) {
       checkMembership();
       loadProjectMembers();
+      localStorage.setItem('kando_project_id', selectedProject.id);
     }
   }, [selectedProject]);
 

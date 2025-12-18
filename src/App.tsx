@@ -9,9 +9,13 @@ import { Loader2 } from 'lucide-react';
 
 function AppContent() {
   const { user, profile, loading } = useAuth();
-  const [view, setView] = useState<'home' | 'dashboard'>('home');
+  const [view, setView] = useState<'home' | 'dashboard'>(() => {
+    return (localStorage.getItem('kando_view') as 'home' | 'dashboard') || 'home';
+  });
   const [showCreateProjectOnDashboard, setShowCreateProjectOnDashboard] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(() => {
+    return localStorage.getItem('kando_project_id');
+  });
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   if (loading) {
@@ -44,9 +48,10 @@ function AppContent() {
 
   const handleGoToDashboard = () => {
     setShowCreateProjectOnDashboard(false);
-    setSelectedProjectId(null);
+    // Don't clear selectedProjectId here if we want to keep the last one
     setSelectedTaskId(null);
     setView('dashboard');
+    localStorage.setItem('kando_view', 'dashboard');
   };
 
   const handleStartProject = () => {
@@ -54,6 +59,8 @@ function AppContent() {
     setSelectedProjectId(null);
     setSelectedTaskId(null);
     setView('dashboard');
+    localStorage.setItem('kando_view', 'dashboard');
+    localStorage.removeItem('kando_project_id');
   };
 
   const handleTaskClick = (projectId: string, taskId: string) => {
@@ -61,6 +68,8 @@ function AppContent() {
     setSelectedTaskId(taskId);
     setShowCreateProjectOnDashboard(false);
     setView('dashboard');
+    localStorage.setItem('kando_view', 'dashboard');
+    localStorage.setItem('kando_project_id', projectId);
   };
 
   const handleGoHome = () => {
@@ -68,6 +77,8 @@ function AppContent() {
     setSelectedProjectId(null);
     setSelectedTaskId(null);
     setView('home');
+    localStorage.setItem('kando_view', 'home');
+    localStorage.removeItem('kando_project_id');
   };
 
   return view === 'home' ? (

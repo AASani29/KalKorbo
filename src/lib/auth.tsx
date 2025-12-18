@@ -109,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null);
       setProfile(null);
+      localStorage.removeItem('kando_view');
+      localStorage.removeItem('kando_project_id');
+      localStorage.removeItem('kando_show_profile');
     }
   };
 
