@@ -20,6 +20,8 @@ export function TaskBoard({ project }: TaskBoardProps) {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<Task['status']>('todo');
   const [loading, setLoading] = useState(true);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<Task['status'] | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -47,42 +49,26 @@ export function TaskBoard({ project }: TaskBoardProps) {
 
   const loadTasks = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('project_id', project.id)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select(`
+          *,
+          assigned_profile:profiles!tasks_assigned_to_fkey(*),
+          creator_profile:profiles!tasks_created_by_fkey(*)
+        `)
+        .eq('project_id', project.id)
+        .order('created_at', { ascending: false });
 
-    if (data) {
-      const tasksWithProfiles = await Promise.all(
-        data.map(async (task) => {
-          const taskWithProfile: TaskWithProfile = { ...task };
-
-          if (task.assigned_to) {
-            const { data: assignedProfile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', task.assigned_to)
-              .maybeSingle();
-            taskWithProfile.assigned_profile = assignedProfile;
-          }
-
-          const { data: creatorProfile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', task.created_by)
-            .maybeSingle();
-          if (creatorProfile) {
-            taskWithProfile.creator_profile = creatorProfile;
-          }
-
-          return taskWithProfile;
-        })
-      );
-
-      setTasks(tasksWithProfiles);
+      if (error) throw error;
+      if (data) {
+        setTasks(data as TaskWithProfile[]);
+      }
+    } catch (error: any) {
+      console.error('Error loading tasks:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleTaskCreated = () => {
@@ -103,6 +89,34 @@ export function TaskBoard({ project }: TaskBoardProps) {
     loadTasks();
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (taskId: string) => {
+    setDraggedTaskId(taskId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTaskId(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, status: Task['status']) => {
+    e.preventDefault();
+    setDragOverColumn(status);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, newStatus: Task['status']) => {
+    e.preventDefault();
+    if (draggedTaskId) {
+      await handleStatusChange(draggedTaskId, newStatus);
+    }
+    setDraggedTaskId(null);
+    setDragOverColumn(null);
+  };
+
   const columns: { status: Task['status']; label: string; color: string }[] = [
     { status: 'todo', label: 'To Do', color: 'bg-gray-100 border-gray-300' },
     { status: 'in_progress', label: 'In Progress', color: 'bg-blue-50 border-blue-300' },
@@ -114,6 +128,7 @@ export function TaskBoard({ project }: TaskBoardProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {columns.map((column) => {
           const columnTasks = tasks.filter((task) => task.status === column.status);
+          const isDropTarget = dragOverColumn === column.status;
 
           return (
             <div key={column.status} className="flex flex-col">
@@ -136,22 +151,40 @@ export function TaskBoard({ project }: TaskBoardProps) {
                 </button>
               </div>
 
-              <div className={`flex-1 rounded-xl border-2 border-dashed ${column.color} p-4 space-y-3 min-h-[200px]`}>
+              <div
+                className={`flex-1 rounded-xl border-2 border-dashed ${column.color} p-4 space-y-3 min-h-[200px] transition-all ${
+                  isDropTarget ? 'ring-2 ring-blue-400 ring-offset-2 bg-blue-50/50 scale-[1.02]' : ''
+                }`}
+                onDragOver={(e) => handleDragOver(e, column.status)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, column.status)}
+              >
                 {loading ? (
                   <div className="text-center text-gray-500 py-8">Loading...</div>
                 ) : columnTasks.length === 0 ? (
-                  <div className="text-center text-gray-400 py-8">No tasks yet</div>
+                  <div className="text-center text-gray-400 py-8">
+                    {isDropTarget ? '📥 Drop here' : 'No tasks yet'}
+                  </div>
                 ) : (
                   columnTasks.map((task) => (
-                    <TaskCard
+                    <div
                       key={task.id}
-                      task={task}
-                      project={project}
-                      onStatusChange={handleStatusChange}
-                      onDelete={handleDeleteTask}
-                      onUpdate={loadTasks}
-                      isOwner={project.owner_id === profile?.id}
-                    />
+                      draggable
+                      onDragStart={() => handleDragStart(task.id)}
+                      onDragEnd={handleDragEnd}
+                      className={`transition-all ${
+                        draggedTaskId === task.id ? 'opacity-50 scale-95' : ''
+                      }`}
+                    >
+                      <TaskCard
+                        task={task}
+                        project={project}
+                        onStatusChange={handleStatusChange}
+                        onDelete={handleDeleteTask}
+                        onUpdate={loadTasks}
+                        isOwner={project.owner_id === profile?.id}
+                      />
+                    </div>
                   ))
                 )}
               </div>

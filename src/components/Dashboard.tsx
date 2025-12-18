@@ -1,37 +1,119 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../lib/auth';
-import { supabase, Project, Task, Profile, ProjectMember } from '../lib/supabase';
-import { LogOut, Plus, Folder, Users } from 'lucide-react';
+import { supabase, Project } from '../lib/supabase';
+import { Sidebar } from './Sidebar';
 import { CreateProjectModal } from './CreateProjectModal';
 import { TaskBoard } from './TaskBoard';
 import { ManageMembersModal } from './ManageMembersModal';
+import { InvitationsModal } from './InvitationsModal';
+import { InviteMemberModal } from './InviteMemberModal';
+import { ProfilePage } from './ProfilePage';
+import { Sparkles, Github, Globe } from 'lucide-react';
 
-export function Dashboard() {
-  const { profile, signOut } = useAuth();
+export function Dashboard({ onGoHome }: { onGoHome: () => void }) {
+  const { profile } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showManageMembers, setShowManageMembers] = useState(false);
+  const [showInvitations, setShowInvitations] = useState(false);
+  const [showInviteMember, setShowInviteMember] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [pendingInvitationsCount, setPendingInvitationsCount] = useState(0);
+  const [isMember, setIsMember] = useState(false);
+  const [projectMembers, setProjectMembers] = useState<any[]>([]);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     loadProjects();
+    loadPendingInvitations();
   }, []);
+
+  useEffect(() => {
+    if (selectedProject) {
+      checkMembership();
+      loadProjectMembers();
+    }
+  }, [selectedProject]);
 
   const loadProjects = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (data) {
-      setProjects(data);
-      if (data.length > 0 && !selectedProject) {
-        setSelectedProject(data[0]);
+      if (data) {
+        setProjects(data);
+        if (data.length > 0 && !selectedProject) {
+          setSelectedProject(data[0]);
+        }
       }
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const loadProjectMembers = async () => {
+    if (!selectedProject) return;
+    
+    try {
+      const { data } = await supabase
+        .from('project_members')
+        .select(`
+          id,
+          role,
+          profiles (
+            id,
+            full_name,
+            avatar_url,
+            avatar_color
+          )
+        `)
+        .eq('project_id', selectedProject.id);
+
+      if (data) {
+        setProjectMembers(data);
+      }
+    } catch (error) {
+      console.error('Error loading project members:', error);
+    }
+  };
+
+  const loadPendingInvitations = async () => {
+    try {
+      const { data } = await supabase
+        .from('project_invitations')
+        .select('id')
+        .or(`invitee_email.eq.${profile?.email},invitee_id.eq.${profile?.id}`)
+        .eq('status', 'pending');
+
+      if (data) {
+        setPendingInvitationsCount(data.length);
+      }
+    } catch (error) {
+      console.error('Error loading invitations:', error);
+    }
+  };
+
+  const checkMembership = async () => {
+    if (!selectedProject) return;
+
+    try {
+      const { data } = await supabase
+        .from('project_members')
+        .select('id')
+        .eq('project_id', selectedProject.id)
+        .eq('user_id', profile?.id)
+        .single();
+
+      setIsMember(!!data);
+    } catch (error) {
+      setIsMember(false);
+    }
   };
 
   const handleProjectCreated = (project: Project) => {
@@ -39,108 +121,169 @@ export function Dashboard() {
     setSelectedProject(project);
   };
 
+  const handleInvitationAccepted = () => {
+    loadProjects();
+    loadPendingInvitations();
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center">
-                <Folder className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900">TaskFlow</h1>
-            </div>
-          </div>
+    <div className="flex h-screen bg-gray-50/50">
+      {/* Sidebar */}
+      <Sidebar
+        projects={projects}
+        selectedProject={selectedProject}
+        onSelectProject={setSelectedProject}
+        onCreateProject={() => setShowCreateProject(true)}
+        onManageMembers={() => setShowManageMembers(true)}
+        onShowInvitations={() => setShowInvitations(true)}
+        onShowProfile={() => setShowProfile(true)}
+        onGoHome={onGoHome}
+        pendingInvitationsCount={pendingInvitationsCount}
+      />
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
-                style={{ backgroundColor: profile?.avatar_color }}
-              >
-                {profile?.full_name.charAt(0).toUpperCase()}
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{profile?.full_name}</p>
-                <p className="text-xs text-gray-500">{profile?.email}</p>
-              </div>
-            </div>
-            <button
-              onClick={signOut}
-              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-              title="Sign Out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4 overflow-x-auto pb-2">
-            {projects.map((project) => (
-              <button
-                key={project.id}
-                onClick={() => setSelectedProject(project)}
-                className={`px-6 py-3 rounded-xl font-medium transition-all whitespace-nowrap flex items-center gap-2 ${
-                  selectedProject?.id === project.id
-                    ? 'bg-white text-gray-900 shadow-md border-2'
-                    : 'bg-white text-gray-600 hover:shadow-sm border border-gray-200'
-                }`}
-                style={{
-                  borderColor: selectedProject?.id === project.id ? project.color : undefined,
-                }}
-              >
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Minimal Topbar */}
+        {selectedProject && (
+          <header className="bg-white/50 backdrop-blur-md border-b border-gray-100 px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {/* Project Icon */}
                 <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: project.color }}
-                />
-                {project.name}
-              </button>
-            ))}
-            <button
-              onClick={() => setShowCreateProject(true)}
-              className="px-6 py-3 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center gap-2 shadow-md"
-            >
-              <Plus className="w-5 h-5" />
-              New Project
-            </button>
-          </div>
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm text-white font-bold text-lg"
+                  style={{ backgroundColor: selectedProject.color }}
+                >
+                  {selectedProject.name.charAt(0).toUpperCase()}
+                </div>
+                
+                {/* Project Info */}
+                <div>
+                  <h1 className="text-lg font-bold text-gray-900">
+                    {selectedProject.name}
+                  </h1>
+                  {selectedProject.description && (
+                    <p className="text-xs text-gray-500 truncate max-w-md">
+                      {selectedProject.description}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-          {selectedProject && (
-            <button
-              onClick={() => setShowManageMembers(true)}
-              className="px-4 py-3 rounded-xl font-medium bg-white text-gray-700 hover:bg-gray-50 transition-all flex items-center gap-2 border border-gray-200"
-            >
-              <Users className="w-5 h-5" />
-              Team
-            </button>
-          )}
-        </div>
+              {/* Simple Actions */}
+              <div className="flex items-center gap-6">
+                {/* Project Links */}
+                <div className="flex items-center gap-3 border-r border-gray-100 pr-6">
+                  {selectedProject.github_url && (
+                    <a
+                      href={selectedProject.github_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all group relative"
+                      title="View on GitHub"
+                    >
+                      <Github className="w-5 h-5" />
+                      <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                        GitHub Repo
+                      </span>
+                    </a>
+                  )}
+                  {selectedProject.live_url && (
+                    <a
+                      href={selectedProject.live_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-all group relative"
+                      title="View Live Demo"
+                    >
+                      <Globe className="w-5 h-5" />
+                      <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                        Live Demo
+                      </span>
+                    </a>
+                  )}
+                </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading projects...</div>
-          </div>
-        ) : selectedProject ? (
-          <TaskBoard project={selectedProject} />
-        ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
-            <Folder className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No projects yet</h3>
-            <p className="text-gray-600 mb-6">Create your first project to get started</p>
-            <button
-              onClick={() => setShowCreateProject(true)}
-              className="px-6 py-3 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all inline-flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              Create Project
-            </button>
-          </div>
+                <div className="flex -space-x-2">
+                  {projectMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden relative group"
+                      style={{ backgroundColor: member.profiles?.avatar_color || '#94a3b8' }}
+                      title={member.profiles?.full_name}
+                    >
+                      {member.profiles?.avatar_url ? (
+                        <img
+                          src={member.profiles.avatar_url}
+                          alt={member.profiles.full_name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        member.profiles?.full_name?.charAt(0).toUpperCase()
+                      )}
+                      
+                      {/* Tooltip */}
+                      <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                        {member.profiles?.full_name}
+                      </span>
+                    </div>
+                  ))}
+                  {projectMembers.length === 0 && (
+                    <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
+                      0
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
         )}
+
+        {/* Content Area */}
+        <main className="flex-1 overflow-auto p-8">
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-brand-600 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <p className="text-sm text-gray-500 font-medium">Loading...</p>
+              </div>
+            </div>
+          ) : !selectedProject ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center max-w-md">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Sparkles className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Welcome to Kando
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Select a project from the sidebar or create a new one to start managing your tasks.
+                </p>
+              </div>
+            </div>
+          ) : !isMember ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center max-w-md">
+                <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Sparkles className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Access Restricted
+                </h3>
+                <p className="text-sm text-gray-500">
+                  You don't have access to this project. Ask the project owner to invite you.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <TaskBoard project={selectedProject} />
+          )}
+        </main>
       </div>
 
+      {/* Modals */}
       {showCreateProject && (
         <CreateProjectModal
           onClose={() => setShowCreateProject(false)}
@@ -152,7 +295,30 @@ export function Dashboard() {
         <ManageMembersModal
           project={selectedProject}
           onClose={() => setShowManageMembers(false)}
+          onInviteMember={() => setShowInviteMember(true)}
         />
+      )}
+
+      {showInvitations && (
+        <InvitationsModal
+          onClose={() => setShowInvitations(false)}
+          onInvitationAccepted={handleInvitationAccepted}
+        />
+      )}
+
+      {showInviteMember && selectedProject && (
+        <InviteMemberModal
+          project={selectedProject}
+          onClose={() => setShowInviteMember(false)}
+          onInviteSent={() => {
+            setShowInviteMember(false);
+            setShowManageMembers(true);
+          }}
+        />
+      )}
+
+      {showProfile && (
+        <ProfilePage onBack={() => setShowProfile(false)} />
       )}
     </div>
   );

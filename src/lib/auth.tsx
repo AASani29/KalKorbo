@@ -9,6 +9,7 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,34 +56,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('Attempting sign in for:', email);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    }
+    console.log('Sign in successful');
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    console.log('Attempting sign up for:', email);
     const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
+    if (error) {
+      console.error('Sign up error:', error);
+      throw error;
+    }
+    console.log('Sign up successful, user created:', data.user?.id);
 
     if (data.user) {
       const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-      await supabase.from('profiles').insert({
+      // Create profile with error handling
+      const { error: profileError } = await supabase.from('profiles').insert({
         id: data.user.id,
         email,
         full_name: fullName,
         avatar_color: randomColor,
       });
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        throw new Error(`Account created, but failed to set up profile: ${profileError.message}`);
+      }
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.auth.signOut();
+      }
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    } finally {
+      setUser(null);
+      setProfile(null);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, refreshProfile: () => user ? loadProfile(user.id) : Promise.resolve() }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,13 +6,14 @@ import { useAuth } from '../lib/auth';
 type ManageMembersModalProps = {
   project: Project;
   onClose: () => void;
+  onInviteMember?: () => void;
 };
 
 type MemberWithProfile = ProjectMember & {
   profile: Profile;
 };
 
-export function ManageMembersModal({ project, onClose }: ManageMembersModalProps) {
+export function ManageMembersModal({ project, onClose, onInviteMember }: ManageMembersModalProps) {
   const { profile } = useAuth();
   const [members, setMembers] = useState<MemberWithProfile[]>([]);
   const [allUsers, setAllUsers] = useState<Profile[]>([]);
@@ -25,28 +26,21 @@ export function ManageMembersModal({ project, onClose }: ManageMembersModalProps
   }, [project.id]);
 
   const loadMembers = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('project_members')
-      .select('*')
+      .select(`
+        *,
+        profile:profiles(*)
+      `)
       .eq('project_id', project.id);
 
+    if (error) {
+      console.error('Error loading members:', error);
+      return;
+    }
+
     if (data) {
-      const membersWithProfiles = await Promise.all(
-        data.map(async (member) => {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', member.user_id)
-            .single();
-
-          return {
-            ...member,
-            profile: profileData!,
-          };
-        })
-      );
-
-      setMembers(membersWithProfiles);
+      setMembers(data as MemberWithProfile[]);
     }
   };
 
@@ -96,12 +90,24 @@ export function ManageMembersModal({ project, onClose }: ManageMembersModalProps
             <h2 className="text-2xl font-bold text-gray-900">Team Members</h2>
             <p className="text-sm text-gray-600 mt-1">{project.name}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {isOwner && onInviteMember && (
+              <button
+                onClick={onInviteMember}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2"
+                title="Invite Member"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span className="hidden sm:inline">Invite</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {isOwner && availableUsers.length > 0 && (
@@ -145,10 +151,14 @@ export function ManageMembersModal({ project, onClose }: ManageMembersModalProps
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold overflow-hidden shadow-sm border-2 border-white"
                     style={{ backgroundColor: member.profile.avatar_color }}
                   >
-                    {member.profile.full_name.charAt(0).toUpperCase()}
+                    {member.profile.avatar_url ? (
+                      <img src={member.profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      member.profile.full_name.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">

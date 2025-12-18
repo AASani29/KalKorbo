@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, User } from 'lucide-react';
 import { supabase, Project, Task, Profile } from '../lib/supabase';
 
 type TaskWithProfile = Task & {
@@ -80,134 +80,172 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Edit Task</h2>
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+      <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 scrollbar-hide">
+        {/* Header */}
+        <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30 sticky top-0 z-10 backdrop-blur-md">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Edit Task</h2>
+            <p className="text-xs text-gray-500 mt-0.5">{project.name}</p>
+          </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-gray-100"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          {/* Title Input */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
               Task Title
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Fix login bug"
+              className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
+              placeholder="Task title"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          {/* Description Input */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-              placeholder="Add more details about the task..."
+              className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400 resize-none"
+              placeholder="Task description"
               rows={4}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          {/* Status Selection */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
               Status
             </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Task['status'])}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            >
-              <option value="todo">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="done">Done</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Priority
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['low', 'medium', 'high'] as Task['priority'][]).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPriority(p)}
-                  className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${
-                    priority === p
-                      ? p === 'low'
-                        ? 'bg-gray-200 text-gray-800'
-                        : p === 'medium'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-red-100 text-red-700'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
+            <div className="relative group">
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as Task['status'])}
+                className="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-700 font-bold text-sm appearance-none cursor-pointer"
+              >
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none border-l border-gray-200 pl-2">
+                <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-400" />
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assign To
-            </label>
-            <select
-              value={assignedTo}
-              onChange={(e) => setAssignedTo(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            >
-              <option value="">Unassigned</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.full_name}
-                </option>
-              ))}
-            </select>
+          {/* Priority & Assignee Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Priority Selection */}
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                Priority
+              </label>
+              <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100">
+                {(['low', 'medium', 'high'] as Task['priority'][]).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPriority(p)}
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                      priority === p
+                        ? p === 'low'
+                          ? 'bg-white text-gray-600 shadow-sm'
+                          : p === 'medium'
+                          ? 'bg-white text-brand-600 shadow-sm'
+                          : 'bg-white text-red-600 shadow-sm'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Assignee Selection */}
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                Assign To
+              </label>
+              <div className="relative group">
+                <select
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-700 font-bold text-sm appearance-none cursor-pointer"
+                >
+                  <option value="">Unassigned</option>
+                  {members.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.full_name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <User className="w-4 h-4 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
+                </div>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none border-l border-gray-200 pl-2">
+                  <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-400" />
+                </div>
+              </div>
+            </div>
           </div>
 
           {task.creator_profile && (
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-sm text-gray-600">
-                Created by <span className="font-medium text-gray-900">{task.creator_profile.full_name}</span>
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {new Date(task.created_at).toLocaleString()}
-              </p>
+            <div className="bg-gray-50/50 rounded-[2rem] p-6 flex items-center gap-4 border border-gray-100">
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold overflow-hidden shadow-sm border-2 border-white"
+                style={{ backgroundColor: task.creator_profile.avatar_color }}
+              >
+                {task.creator_profile.avatar_url ? (
+                  <img src={task.creator_profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  task.creator_profile.full_name.charAt(0).toUpperCase()
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Created by</p>
+                <p className="text-sm font-bold text-gray-900">{task.creator_profile.full_name}</p>
+                <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                  {new Date(task.created_at).toLocaleString()}
+                </p>
+              </div>
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+            <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl text-xs font-bold flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
               {error}
             </div>
           )}
 
-          <div className="flex gap-3 pt-4">
+          {/* Footer Actions */}
+          <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all"
+              className="flex-1 px-6 py-4 text-gray-500 font-bold hover:text-gray-700 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-4 bg-brand-600 text-white rounded-2xl font-bold shadow-xl shadow-brand-100 hover:bg-brand-700 hover:shadow-brand-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

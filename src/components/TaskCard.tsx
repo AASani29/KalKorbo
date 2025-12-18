@@ -39,7 +39,7 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
   return (
     <>
       <div
-        className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-pointer group"
+        className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-grab active:cursor-grabbing group"
         onClick={() => setShowEdit(true)}
       >
         <div className="flex items-start justify-between gap-2 mb-3">
@@ -115,11 +115,15 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
           {task.assigned_profile ? (
             <div className="flex items-center gap-2">
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold overflow-hidden shadow-sm border border-white"
                 style={{ backgroundColor: task.assigned_profile.avatar_color }}
                 title={task.assigned_profile.full_name}
               >
-                {task.assigned_profile.full_name.charAt(0).toUpperCase()}
+                {task.assigned_profile.avatar_url ? (
+                  <img src={task.assigned_profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  task.assigned_profile.full_name.charAt(0).toUpperCase()
+                )}
               </div>
             </div>
           ) : (
