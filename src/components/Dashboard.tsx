@@ -10,11 +10,21 @@ import { InviteMemberModal } from './InviteMemberModal';
 import { ProfilePage } from './ProfilePage';
 import { Sparkles, Github, Globe } from 'lucide-react';
 
-export function Dashboard({ onGoHome }: { onGoHome: () => void }) {
+export function Dashboard({ 
+  onGoHome, 
+  initialShowCreateProject = false,
+  initialProjectId = null,
+  initialTaskId = null
+}: { 
+  onGoHome: () => void;
+  initialShowCreateProject?: boolean;
+  initialProjectId?: string | null;
+  initialTaskId?: string | null;
+}) {
   const { profile } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [showCreateProject, setShowCreateProject] = useState(initialShowCreateProject);
   const [showManageMembers, setShowManageMembers] = useState(false);
   const [showInvitations, setShowInvitations] = useState(false);
   const [showInviteMember, setShowInviteMember] = useState(false);
@@ -46,7 +56,14 @@ export function Dashboard({ onGoHome }: { onGoHome: () => void }) {
 
       if (data) {
         setProjects(data);
-        if (data.length > 0 && !selectedProject) {
+        if (initialProjectId) {
+          const project = data.find(p => p.id === initialProjectId);
+          if (project) {
+            setSelectedProject(project);
+          } else if (data.length > 0 && !selectedProject) {
+            setSelectedProject(data[0]);
+          }
+        } else if (data.length > 0 && !selectedProject) {
           setSelectedProject(data[0]);
         }
       }
@@ -278,7 +295,7 @@ export function Dashboard({ onGoHome }: { onGoHome: () => void }) {
               </div>
             </div>
           ) : (
-            <TaskBoard project={selectedProject} />
+            <TaskBoard project={selectedProject} initialTaskId={initialTaskId} />
           )}
         </main>
       </div>

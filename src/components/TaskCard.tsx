@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Task, Project, Profile } from '../lib/supabase';
-import { MoreVertical, Trash2, User, AlertCircle, Clock } from 'lucide-react';
+import { MoreVertical, Trash2, User, Flag, Tag, Clock, Calendar } from 'lucide-react';
 import { EditTaskModal } from './EditTaskModal';
 
 type TaskWithProfile = Task & {
@@ -18,9 +18,9 @@ type TaskCardProps = {
 };
 
 const PRIORITY_CONFIG = {
-  low: { label: 'Low', color: 'bg-gray-100 text-gray-700', icon: Clock },
-  medium: { label: 'Medium', color: 'bg-blue-100 text-blue-700', icon: AlertCircle },
-  high: { label: 'High', color: 'bg-red-100 text-red-700', icon: AlertCircle },
+  low: { label: 'Low', color: 'bg-gray-100 text-gray-700' },
+  medium: { label: 'Medium', color: 'bg-blue-100 text-blue-700' },
+  high: { label: 'High', color: 'bg-red-100 text-red-700' },
 };
 
 export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, isOwner }: TaskCardProps) {
@@ -28,7 +28,6 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
   const [showEdit, setShowEdit] = useState(false);
 
   const priorityConfig = PRIORITY_CONFIG[task.priority];
-  const PriorityIcon = priorityConfig.icon;
 
   const statuses: { value: Task['status']; label: string }[] = [
     { value: 'todo', label: 'To Do' },
@@ -81,8 +80,14 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm('Are you sure you want to delete this task?')) {
-                          onDelete(task.id);
+                        console.log('>>> TaskCard: Delete button clicked for task:', task.id);
+                        if (window.confirm('Are you sure you want to delete this task?')) {
+                          console.log('>>> TaskCard: User confirmed deletion, calling onDelete...');
+                          try {
+                            onDelete(task.id);
+                          } catch (err) {
+                            console.error('>>> TaskCard: Error calling onDelete:', err);
+                          }
                         }
                         setShowMenu(false);
                       }}
@@ -99,17 +104,72 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
         </div>
 
         {task.description && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{task.description}</p>
+          <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{task.description}</p>
         )}
 
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 ${priorityConfig.color}`}
-            >
-              <PriorityIcon className="w-3 h-3" />
-              {priorityConfig.label}
-            </span>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {/* Priority */}
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border shadow-sm ${
+              task.priority === 'high' 
+                ? 'bg-rose-50 text-rose-600 border-rose-100' 
+                : task.priority === 'medium'
+                ? 'bg-amber-50 text-amber-600 border-amber-100'
+                : 'bg-gray-50 text-gray-600 border-gray-100'
+            }`}
+          >
+            <Flag className="w-3 h-3" />
+            {priorityConfig.label}
+          </span>
+
+          {/* Labels */}
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {task.tags.map((tag, i) => {
+                const colors = [
+                  { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100' },
+                  { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
+                  { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-100' },
+                  { bg: 'bg-cyan-50', text: 'text-cyan-600', border: 'border-cyan-100' },
+                ];
+                const colorIndex = tag.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
+                const color = colors[colorIndex];
+
+                return (
+                  <span 
+                    key={i}
+                    className={`inline-flex items-center gap-1 px-2 py-1 ${color.bg} ${color.text} rounded-lg text-[10px] font-bold border ${color.border} shadow-sm`}
+                  >
+                    <Tag className="w-2.5 h-2.5 opacity-70" />
+                    {tag}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-50">
+          <div className="flex flex-wrap items-center gap-4 text-gray-400">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                {new Date(task.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+            </div>
+
+            {task.due_date && (
+              <div className={`flex items-center gap-1.5 ${
+                new Date(task.due_date) < new Date() && task.status !== 'done'
+                  ? 'text-rose-500'
+                  : 'text-gray-400'
+              }`}>
+                <Calendar className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">
+                  {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+            )}
           </div>
 
           {task.assigned_profile ? (

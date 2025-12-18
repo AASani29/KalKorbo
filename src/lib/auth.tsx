@@ -78,18 +78,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-      // Create profile with error handling
-      const { error: profileError } = await supabase.from('profiles').insert({
+      const newProfile: Profile = {
         id: data.user.id,
         email,
         full_name: fullName,
         avatar_color: randomColor,
-      });
+        onboarding_completed: false,
+        created_at: new Date().toISOString()
+      };
+
+      const { error: profileError } = await supabase.from('profiles').insert(newProfile);
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
         throw new Error(`Account created, but failed to set up profile: ${profileError.message}`);
       }
+
+      setProfile(newProfile);
     }
   };
 

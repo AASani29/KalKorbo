@@ -10,6 +10,9 @@ import { Loader2 } from 'lucide-react';
 function AppContent() {
   const { user, profile, loading } = useAuth();
   const [view, setView] = useState<'home' | 'dashboard'>('home');
+  const [showCreateProjectOnDashboard, setShowCreateProjectOnDashboard] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -24,14 +27,62 @@ function AppContent() {
 
   if (!user) return <Auth />;
 
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-brand-600 animate-spin mx-auto mb-4" />
+          <p className="text-sm text-gray-400 font-bold uppercase tracking-widest">Preparing your workspace...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (profile && !profile.onboarding_completed) {
     return <Onboarding onComplete={() => setView('home')} />;
   }
 
+  const handleGoToDashboard = () => {
+    setShowCreateProjectOnDashboard(false);
+    setSelectedProjectId(null);
+    setSelectedTaskId(null);
+    setView('dashboard');
+  };
+
+  const handleStartProject = () => {
+    setShowCreateProjectOnDashboard(true);
+    setSelectedProjectId(null);
+    setSelectedTaskId(null);
+    setView('dashboard');
+  };
+
+  const handleTaskClick = (projectId: string, taskId: string) => {
+    setSelectedProjectId(projectId);
+    setSelectedTaskId(taskId);
+    setShowCreateProjectOnDashboard(false);
+    setView('dashboard');
+  };
+
+  const handleGoHome = () => {
+    setShowCreateProjectOnDashboard(false);
+    setSelectedProjectId(null);
+    setSelectedTaskId(null);
+    setView('home');
+  };
+
   return view === 'home' ? (
-    <HomePage onGoToDashboard={() => setView('dashboard')} />
+    <HomePage 
+      onGoToDashboard={handleGoToDashboard}
+      onStartProject={handleStartProject}
+      onTaskClick={handleTaskClick}
+    />
   ) : (
-    <Dashboard onGoHome={() => setView('home')} />
+    <Dashboard 
+      onGoHome={handleGoHome}
+      initialShowCreateProject={showCreateProjectOnDashboard}
+      initialProjectId={selectedProjectId}
+      initialTaskId={selectedTaskId}
+    />
   );
 }
 

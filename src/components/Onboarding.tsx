@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Loader2, Sparkles, ArrowRight, User, UserCircle, Users } from 'lucide-react';
+import { Check, Sparkles, ArrowRight, User, UserCircle, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import { useToast } from '../lib/toast';

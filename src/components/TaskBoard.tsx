@@ -3,10 +3,13 @@ import { supabase, Project, Task, Profile } from '../lib/supabase';
 import { Plus } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { CreateTaskModal } from './CreateTaskModal';
+import { EditTaskModal } from './EditTaskModal';
 import { useAuth } from '../lib/auth';
+import { useToast } from '../lib/toast';
 
 type TaskBoardProps = {
   project: Project;
+  initialTaskId?: string | null;
 };
 
 type TaskWithProfile = Task & {
@@ -14,10 +17,12 @@ type TaskWithProfile = Task & {
   creator_profile?: Profile;
 };
 
-export function TaskBoard({ project }: TaskBoardProps) {
+export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
   const { profile } = useAuth();
+  const { showToast } = useToast();
   const [tasks, setTasks] = useState<TaskWithProfile[]>([]);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<TaskWithProfile | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<Task['status']>('todo');
   const [loading, setLoading] = useState(true);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
@@ -46,6 +51,15 @@ export function TaskBoard({ project }: TaskBoardProps) {
       supabase.removeChannel(channel);
     };
   }, [project.id]);
+
+  useEffect(() => {
+    if (initialTaskId && tasks.length > 0) {
+      const task = tasks.find(t => t.id === initialTaskId);
+      if (task) {
+        setTaskToEdit(task);
+      }
+    }
+  }, [initialTaskId, tasks]);
 
   const loadTasks = async () => {
     setLoading(true);
@@ -85,8 +99,34 @@ export function TaskBoard({ project }: TaskBoardProps) {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    await supabase.from('tasks').delete().eq('id', taskId);
-    loadTasks();
+    console.log('!!! TaskBoard: DELETE FUNCTION CALLED !!!', taskId);
+    try {
+      console.log('>>> TaskBoard: Calling supabase.delete() for:', taskId);
+      const { data, error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId)
+        .select();
+
+      if (error) {
+        console.error('>>> TaskBoard: Supabase error:', error);
+        throw error;
+      }
+
+      console.log('>>> TaskBoard: Supabase response data:', data);
+
+      if (!data || data.length === 0) {
+        console.warn('>>> TaskBoard: No rows deleted. Check RLS policies.');
+        throw new Error('Task not found or you don\'t have permission to delete it.');
+      }
+
+      console.log('>>> TaskBoard: Task deleted successfully');
+      showToast('success', 'Task deleted successfully');
+      await loadTasks();
+    } catch (error: any) {
+      console.error('>>> TaskBoard: Error in handleDeleteTask:', error);
+      showToast('error', error.message || 'Failed to delete task');
+    }
   };
 
   // Drag and drop handlers
@@ -182,7 +222,7 @@ export function TaskBoard({ project }: TaskBoardProps) {
                         onStatusChange={handleStatusChange}
                         onDelete={handleDeleteTask}
                         onUpdate={loadTasks}
-                        isOwner={project.owner_id === profile?.id}
+                        isOwner={project.owner_id === profile?.id || task.created_by === profile?.id}
                       />
                     </div>
                   ))
@@ -199,6 +239,15 @@ export function TaskBoard({ project }: TaskBoardProps) {
           initialStatus={selectedStatus}
           onClose={() => setShowCreateTask(false)}
           onTaskCreated={handleTaskCreated}
+        />
+      )}
+
+      {taskToEdit && (
+        <EditTaskModal
+          task={taskToEdit}
+          project={project}
+          onClose={() => setTaskToEdit(null)}
+          onUpdate={loadTasks}
         />
       )}
     </div>

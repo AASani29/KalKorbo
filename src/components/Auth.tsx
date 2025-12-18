@@ -47,10 +47,11 @@ export function Auth() {
           <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full -mr-48 -mt-48 blur-3xl opacity-50 group-hover:scale-110 transition-transform duration-1000" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-200 rounded-full -ml-32 -mb-32 blur-3xl opacity-30 group-hover:scale-125 transition-transform duration-1000" />
           
-          <div className="relative z-10 space-y-8">
-            <div className="w-20 h-20 bg-white rounded-[2rem] shadow-xl shadow-brand-200/50 flex items-center justify-center mb-12 group-hover:rotate-6 transition-transform duration-500">
-              <img src="/Kando Logo.svg" alt="Kando" className="h-12 w-auto" />
+          <div className="flex items-center justify-start ml-[-3rem]">
+              <img src="/upscalemedia-transformed.png" alt="Kando" className="h-56 w-auto" />
             </div>
+          <div className="relative z-10 space-y-8">
+            
             
             <div className="space-y-4">
               <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight leading-tight">

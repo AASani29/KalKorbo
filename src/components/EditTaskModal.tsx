@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Loader2, User } from 'lucide-react';
+import { X, Loader2, User, Tag, Calendar } from 'lucide-react';
 import { supabase, Project, Task, Profile } from '../lib/supabase';
 
 type TaskWithProfile = Task & {
@@ -20,6 +20,9 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
   const [priority, setPriority] = useState<Task['priority']>(task.priority);
   const [status, setStatus] = useState<Task['status']>(task.status);
   const [assignedTo, setAssignedTo] = useState<string>(task.assigned_to || '');
+  const [tags, setTags] = useState<string[]>(task.tags || []);
+  const [labelInput, setLabelInput] = useState('');
+  const [dueDate, setDueDate] = useState(task.due_date ? task.due_date.split('T')[0] : '');
   const [members, setMembers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,6 +50,13 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
     }
   };
 
+  const handleAddLabel = () => {
+    if (labelInput.trim() && !tags.includes(labelInput.trim())) {
+      setTags([...tags, labelInput.trim()]);
+      setLabelInput('');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -61,6 +71,8 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
           priority,
           status,
           assigned_to: assignedTo || null,
+          tags: tags,
+          due_date: dueDate || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', task.id);
@@ -201,6 +213,80 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
                   <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-400" />
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Deadline Selection */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+              Deadline
+            </label>
+            <div className="relative group">
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-700 font-bold text-sm cursor-pointer"
+              />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Calendar className="w-4 h-4 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
+              </div>
+            </div>
+          </div>
+
+          {/* Labels Input */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+              Labels
+            </label>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={labelInput}
+                    onChange={(e) => setLabelInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddLabel();
+                      }
+                    }}
+                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
+                    placeholder="Type a label..."
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <Tag className="w-4 h-4 text-gray-300" />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddLabel}
+                  className="px-6 bg-brand-50 text-brand-600 font-bold rounded-2xl hover:bg-brand-100 transition-colors border border-brand-100"
+                >
+                  Add
+                </button>
+              </div>
+              
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 px-1">
+                  {tags.map((tag, i) => (
+                    <span 
+                      key={i}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-brand-100 animate-in zoom-in duration-200"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => setTags(tags.filter((_, index) => index !== i))}
+                        className="hover:text-brand-900 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
