@@ -23,6 +23,13 @@ const PRIORITY_CONFIG = {
   high: { label: 'High', color: 'bg-red-100 text-red-700' },
 };
 
+const STATUS_COLORS = {
+  todo: 'bg-gray-50 border-gray-200',
+  in_progress: 'bg-blue-50 border-blue-200',
+  done: 'bg-green-50 border-green-200',
+};
+
+
 export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, isOwner }: TaskCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -38,11 +45,11 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
   return (
     <>
       <div
-        className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-grab active:cursor-grabbing group"
+        className={`${STATUS_COLORS[task.status]} rounded-xl p-4 shadow-sm border hover:shadow-md transition-all cursor-grab active:cursor-grabbing group`}
         onClick={() => setShowEdit(true)}
       >
         <div className="flex items-start justify-between gap-2 mb-3">
-          <h4 className="font-medium text-gray-900 flex-1 line-clamp-2">{task.title}</h4>
+          <h4 className="font-medium text-gray-900 flex-1">{task.title}</h4>
           <div className="relative">
             <button
               onClick={(e) => {
@@ -104,7 +111,7 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
         </div>
 
         {task.description && (
-          <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{task.description}</p>
+          <p className="text-sm text-gray-600 mb-4 leading-relaxed whitespace-pre-wrap">{task.description}</p>
         )}
 
         <div className="flex flex-wrap items-center gap-2 mb-4">

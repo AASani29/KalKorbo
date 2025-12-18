@@ -158,9 +158,9 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
   };
 
   const columns: { status: Task['status']; label: string; color: string }[] = [
-    { status: 'todo', label: 'To Do', color: 'bg-gray-100 border-gray-300' },
-    { status: 'in_progress', label: 'In Progress', color: 'bg-blue-50 border-blue-300' },
-    { status: 'done', label: 'Done', color: 'bg-green-50 border-green-300' },
+    { status: 'todo', label: 'To Do', color: 'bg-slate-50/30 border-gray-200' },
+    { status: 'in_progress', label: 'In Progress', color: 'bg-slate-50/30 border-gray-200' },
+    { status: 'done', label: 'Done', color: 'bg-slate-50/30 border-gray-200' },
   ];
 
   return (
