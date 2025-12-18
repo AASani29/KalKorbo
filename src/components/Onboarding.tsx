@@ -17,9 +17,15 @@ export function Onboarding({ onComplete }: { onComplete: () => void }) {
   const [selectedAvatar, setSelectedAvatar] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
-  const avatars = gender 
-    ? Array.from({ length: 6 }, (_, i) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${gender}-${i}&backgroundColor=b6e3f4,c0aede,d1d4f9`)
-    : [];
+  const femaleAvatars = Array.from({ length: 11 }, (_, i) => `/female ${i + 1}.svg`);
+  const maleAvatars = Array.from({ length: 8 }, (_, i) => `/male ${i + 1}.svg`);
+
+  const avatars = gender === 'female' 
+    ? femaleAvatars 
+    : gender === 'male' 
+    ? maleAvatars 
+    : [...maleAvatars, ...femaleAvatars];
+
 
   const handleComplete = async () => {
     if (!gender || !selectedAvatar) {

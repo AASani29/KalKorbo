@@ -12,21 +12,14 @@ import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/toast';
 
 const AVATARS = {
-  male: [
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Max',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie',
-  ],
-  female: [
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Bella',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna',
+  male: Array.from({ length: 8 }, (_, i) => `/male ${i + 1}.svg`),
+  female: Array.from({ length: 11 }, (_, i) => `/female ${i + 1}.svg`),
+  other: [
+    ...Array.from({ length: 8 }, (_, i) => `/male ${i + 1}.svg`),
+    ...Array.from({ length: 11 }, (_, i) => `/female ${i + 1}.svg`)
   ]
 };
+
 
 type ProfilePageProps = {
   onBack: () => void;
@@ -36,8 +29,8 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
   const { profile, refreshProfile } = useAuth();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(
-    (profile?.gender as 'male' | 'female') || 'male'
+  const [selectedGender, setSelectedGender] = useState<'male' | 'female' | 'other'>(
+    (profile?.gender as 'male' | 'female' | 'other') || 'male'
   );
   const [selectedAvatar, setSelectedAvatar] = useState(profile?.avatar_url || '');
 
@@ -156,6 +149,16 @@ export function ProfilePage({ onBack }: ProfilePageProps) {
                     }`}
                   >
                     Female
+                  </button>
+                  <button
+                    onClick={() => setSelectedGender('other')}
+                    className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      selectedGender === 'other'
+                        ? 'bg-white text-brand-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Other
                   </button>
                 </div>
 

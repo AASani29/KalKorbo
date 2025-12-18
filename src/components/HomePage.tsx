@@ -113,7 +113,7 @@ export function HomePage({
             <div className="relative">
               <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl bg-brand-50">
                 <img 
-                  src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.full_name}`} 
+                  src={profile?.avatar_url || '/male 1.svg'} 
                   alt="Profile" 
                   className="w-full h-full object-cover"
                 />
