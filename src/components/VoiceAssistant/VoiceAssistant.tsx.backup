@@ -1,0 +1,13 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useAudioRecorder } from '../../hooks/useAudioRecorder';
+import { useCommandExecutor, CommandResult } from '../../hooks/useCommandExecutor';
+import { transcribeAudio, parseCommand as parseCommandWithAI } from '../../services/groqService';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../lib/auth';
+import { findBestMatches } from '../../utils/fuzzyMatch';
+import { VoiceButton } from './VoiceButton';
+import { VoiceDisplay } from './VoiceDisplay';
+import { VoiceFeedback } from './VoiceFeedback';
+import { VoiceHelp } from './VoiceHelp';
+import { VoiceConfirmation } from './VoiceConfirmation';
+

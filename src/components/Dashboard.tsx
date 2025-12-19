@@ -9,6 +9,7 @@ import { InvitationsModal } from './InvitationsModal';
 import { InviteMemberModal } from './InviteMemberModal';
 import { ProfilePage } from './ProfilePage';
 import { HomePage } from './HomePage';
+import { VoiceAssistant } from './VoiceAssistant/VoiceAssistant';
 import { Sparkles, Github, Globe } from 'lucide-react';
 
 export function Dashboard({ 
@@ -346,6 +347,30 @@ export function Dashboard({
       {showProfile && (
         <ProfilePage onBack={() => setShowProfile(false)} />
       )}
+
+      {/* Voice Assistant */}
+      <VoiceAssistant
+        onNavigate={(destination) => {
+          if (destination === 'home') {
+            handleGoHome();
+          } else if (destination === 'profile') {
+            setShowProfile(true);
+          }
+        }}
+        onOpenProject={(projectId) => {
+          const project = projects.find(p => p.id === projectId);
+          if (project) {
+            setSelectedProject(project);
+          }
+        }}
+        onRefresh={() => {
+          loadProjects();
+          loadPendingInvitations();
+          if (selectedProject) {
+            loadProjectMembers();
+          }
+        }}
+      />
     </div>
   );
 }
