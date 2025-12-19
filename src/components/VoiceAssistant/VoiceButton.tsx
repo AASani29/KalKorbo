@@ -17,16 +17,16 @@ export function VoiceButton({ isListening, isSupported, onClick, onHelpClick }: 
       {/* Help Button */}
       <button
         onClick={onHelpClick}
-        className="w-12 h-12 bg-white hover:bg-gray-50 rounded-full shadow-lg border border-gray-200 flex items-center justify-center transition-all duration-200 group"
+        className="w-8 h-8 bg-white hover:bg-gray-50 rounded-full shadow-lg border border-gray-200 flex items-center justify-center transition-all duration-200 group"
         title="Voice Commands Help"
       >
-        <HelpCircle className="w-5 h-5 text-gray-600 group-hover:text-brand-600 transition-colors" />
+        <HelpCircle className="w-4 h-4 text-gray-600 group-hover:text-brand-600 transition-colors" />
       </button>
 
       {/* Main Voice Button */}
       <button
         onClick={onClick}
-        className={`w-16 h-16 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center relative ${
+        className={`w-12 h-12 rounded-full shadow-2xl transition-all duration-300 flex items-center justify-center relative ${
           isListening
             ? 'bg-red-500 hover:bg-red-600 scale-110'
             : 'bg-gradient-to-br from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800'
@@ -44,9 +44,9 @@ export function VoiceButton({ isListening, isSupported, onClick, onHelpClick }: 
         {/* Icon */}
         <div className="relative z-10">
           {isListening ? (
-            <MicOff className="w-8 h-8 text-white" strokeWidth={2.5} />
+            <MicOff className="w-6 h-6 text-white" strokeWidth={2.5} />
           ) : (
-            <Mic className="w-8 h-8 text-white" strokeWidth={2.5} />
+            <Mic className="w-6 h-6 text-white" strokeWidth={2.5} />
           )}
         </div>
       </button>

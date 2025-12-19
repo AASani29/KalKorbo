@@ -29,6 +29,7 @@ export function VoiceAssistant({ onNavigate, onOpenProject, onRefresh }: VoiceAs
     message: string;
   }>({ type: null, message: '' });
   const [showHelp, setShowHelp] = useState(false);
+  const [resultMessage, setResultMessage] = useState<string | null>(null);
   
   // Confirmation state
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -47,24 +48,33 @@ export function VoiceAssistant({ onNavigate, onOpenProject, onRefresh }: VoiceAs
   } = useAudioRecorder();
 
   const handleSuccess = useCallback((result: CommandResult) => {
-    setFeedback({ type: 'success', message: result.message });
+    setResultMessage(result.message);
     setProcessingStage('idle');
     setParsedCommandText(null);
-    setTranscript('');
     resetRecording();
     
     if (onRefresh) {
       setTimeout(onRefresh, 500);
     }
+
+    // Clear result message after 5 seconds
+    setTimeout(() => {
+      setResultMessage(null);
+      setTranscript('');
+    }, 5000);
   }, [onRefresh, resetRecording]);
 
   const handleError = useCallback((result: CommandResult) => {
-    setFeedback({ 
-      type: 'error', 
-      message: result.error || result.message 
-    });
+    const message = result.error || result.message;
+    setResultMessage(message);
     setProcessingStage('idle');
     setParsedCommandText(null);
+
+    // Clear error message after 5 seconds
+    setTimeout(() => {
+      setResultMessage(null);
+      setTranscript('');
+    }, 5000);
   }, []);
 
   const handleShowHelp = useCallback(() => {
@@ -323,15 +333,17 @@ export function VoiceAssistant({ onNavigate, onOpenProject, onRefresh }: VoiceAs
     if (isRecording) {
       stopRecording();
       setProcessingStage('recording');
-    } else if (processingStage !== 'idle') {
+    } else if (processingStage !== 'idle' || resultMessage) {
       setProcessingStage('idle');
       setTranscript('');
       setParsedCommandText(null);
+      setResultMessage(null);
       resetRecording();
     } else {
       setFeedback({ type: null, message: '' });
       setTranscript('');
       setParsedCommandText(null);
+      setResultMessage(null);
       setProcessingStage('recording');
       startRecording();
     }
@@ -345,6 +357,8 @@ export function VoiceAssistant({ onNavigate, onOpenProject, onRefresh }: VoiceAs
   const isProcessing = processingStage !== 'idle' && processingStage !== 'recording';
 
   const getDisplayText = () => {
+    if (resultMessage) return transcript;
+    
     switch (processingStage) {
       case 'recording':
         return '';
@@ -376,6 +390,7 @@ export function VoiceAssistant({ onNavigate, onOpenProject, onRefresh }: VoiceAs
         interimTranscript={isRecording ? `Recording... ${recordingTime}s ${recordingTime >= 8 ? '(stopping soon...)' : ''}` : ''}
         isProcessing={isProcessing}
         parsedCommand={parsedCommandText}
+        resultMessage={resultMessage}
       />
 
       <VoiceFeedback

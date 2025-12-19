@@ -6,6 +6,7 @@ interface VoiceDisplayProps {
   interimTranscript: string;
   isProcessing: boolean;
   parsedCommand: string | null;
+  resultMessage: string | null;
 }
 
 export function VoiceDisplay({
@@ -13,9 +14,10 @@ export function VoiceDisplay({
   transcript,
   interimTranscript,
   isProcessing,
-  parsedCommand
+  parsedCommand,
+  resultMessage
 }: VoiceDisplayProps) {
-  if (!isListening && !transcript && !isProcessing) {
+  if (!isListening && !transcript && !isProcessing && !resultMessage) {
     return null;
   }
 
@@ -72,6 +74,18 @@ export function VoiceDisplay({
               <Loader2 className="w-4 h-4 text-brand-600 animate-spin" />
               <p className="text-sm font-medium text-gray-600">
                 Executing command...
+              </p>
+            </div>
+          )}
+
+          {/* Success Result Message */}
+          {resultMessage && !isProcessing && (
+            <div className="space-y-1 pt-2 border-t border-gray-100 animate-in fade-in slide-in-from-top-2 duration-300">
+              <p className="text-xs font-semibold text-green-600 uppercase tracking-wider">
+                Result:
+              </p>
+              <p className="text-sm font-bold text-gray-900 bg-green-50 p-2.5 rounded-xl border border-green-100">
+                {resultMessage}
               </p>
             </div>
           )}
