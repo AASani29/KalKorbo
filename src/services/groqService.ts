@@ -71,12 +71,13 @@ export async function parseCommand(transcript: string): Promise<CommandParseResu
 Convert natural language commands into structured JSON.
 
 Available actions:
-- add_task: Create a new task (params: taskName, projectName, priority?)
+- add_task: Create a new task (params: taskName, projectName, status?, priority?, description?, dueDate?, memberName?, tags?: string[])
+- update_task: Update an existing task (params: taskIdentifier, status?, priority?, description?, dueDate?, memberName?, tags?: string[])
 - update_task_status: Change task status (params: taskIdentifier, status: todo|in_progress|done)
 - delete_task: Remove a task (params: taskIdentifier)
 - assign_task: Assign task to member (params: taskIdentifier, memberName)
-- set_priority: Set task priority (params: taskIdentifier, priority: high|medium|low)
-- set_due_date: Set task due date (params: taskIdentifier, dueDate)
+- update_task_priority: Set task priority (params: taskIdentifier, priority: high|medium|low)
+- update_task_due_date: Set task due date (params: taskIdentifier, dueDate)
 - create_project: Create new project (params: projectName)
 - open_project: Navigate to project (params: projectName)
 - show_projects: List all projects (params: {})
@@ -90,6 +91,13 @@ Available actions:
 - filter_tasks_by_due_date: Filter by due date (params: timeframe: today|tomorrow|this week)
 - show_help: Display help (params: {})
 - stop_listening: Stop voice assistant (params: {})
+
+Important Notes:
+- ONLY include parameters that are explicitly mentioned in the voice command.
+- For dueDate, use natural language like "today", "tomorrow", "next Friday", or a specific date.
+- tags should be an array of strings if labels are mentioned.
+- projectName is required for add_task.
+- memberName refers to the person's name mentioned for assignment.
 
 Respond ONLY with valid JSON in this exact format:
 {

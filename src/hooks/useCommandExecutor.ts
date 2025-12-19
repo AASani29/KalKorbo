@@ -146,19 +146,49 @@ export function useCommandExecutor(options: UseCommandExecutorOptions = {}) {
             switch (command.action) {
                 // ============ TASK MANAGEMENT ============
                 case 'add_task': {
-                    const { taskName, projectName, priority } = command.params;
+                    const {
+                        taskName,
+                        projectName,
+                        status,
+                        priority,
+                        description,
+                        dueDate,
+                        memberName,
+                        tags
+                    } = command.params;
                     const project = await findProjectByName(projectName);
+
+                    let assigneeId = profile?.id;
+                    if (memberName) {
+                        const { data: members } = await supabase
+                            .from('profiles')
+                            .select('id')
+                            .ilike('full_name', `%${memberName}%`)
+                            .limit(1);
+
+                        if (members && members.length > 0) {
+                            assigneeId = members[0].id;
+                        }
+                    }
+
+                    const insertData: any = {
+                        title: taskName,
+                        project_id: project.id,
+                        status: status || 'todo',
+                        priority: priority || 'medium',
+                        created_by: profile?.id,
+                        assigned_to: assigneeId,
+                        description: description || '',
+                        tags: tags || []
+                    };
+
+                    if (dueDate) {
+                        insertData.due_date = parseDate(dueDate);
+                    }
 
                     const { data, error } = await supabase
                         .from('tasks')
-                        .insert({
-                            title: taskName,
-                            project_id: project.id,
-                            status: 'todo',
-                            priority: priority || 'medium',
-                            created_by: profile?.id,
-                            assigned_to: profile?.id
-                        })
+                        .insert(insertData)
                         .select()
                         .single();
 
@@ -168,6 +198,54 @@ export function useCommandExecutor(options: UseCommandExecutorOptions = {}) {
                         success: true,
                         message: `Task "${taskName}" added to ${project.name}`,
                         data
+                    };
+                    break;
+                }
+
+                case 'update_task': {
+                    const {
+                        taskIdentifier,
+                        status,
+                        priority,
+                        description,
+                        dueDate,
+                        memberName,
+                        tags
+                    } = command.params;
+                    const task = await findTaskByIdentifier(taskIdentifier);
+
+                    const updateData: any = {};
+                    if (status) updateData.status = status;
+                    if (priority) updateData.priority = priority;
+                    if (description !== undefined) updateData.description = description;
+                    if (tags) updateData.tags = tags;
+
+                    if (dueDate) {
+                        updateData.due_date = parseDate(dueDate);
+                    }
+
+                    if (memberName) {
+                        const { data: members } = await supabase
+                            .from('profiles')
+                            .select('id')
+                            .ilike('full_name', `%${memberName}%`)
+                            .limit(1);
+
+                        if (members && members.length > 0) {
+                            updateData.assigned_to = members[0].id;
+                        }
+                    }
+
+                    const { error } = await supabase
+                        .from('tasks')
+                        .update(updateData)
+                        .eq('id', task.id);
+
+                    if (error) throw error;
+
+                    result = {
+                        success: true,
+                        message: `Task "${task.title}" updated successfully`
                     };
                     break;
                 }
