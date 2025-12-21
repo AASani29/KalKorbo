@@ -2,6 +2,8 @@
 
 **KalKorbo** (Bengali for *"Will do tomorrow"* — but we help you do it today!) is a high-performance, real-time issue and task management platform designed for modern teams and developers. It blends a premium, glassmorphic UI with cutting-edge features like AI-powered voice commands and live collaborator presence.
 
+🔗 **Live Demo:** [kalkorbo.netlify.app](https://kalkorbo.netlify.app/)
+
 ---
 
 ## 🌟 Overview
