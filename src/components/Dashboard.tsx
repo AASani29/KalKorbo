@@ -243,9 +243,8 @@ export function Dashboard({
                   {projectMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden relative group"
+                      className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden relative group/member"
                       style={{ backgroundColor: member.profiles?.avatar_color || '#94a3b8' }}
-                      title={member.profiles?.full_name}
                     >
                       {member.profiles?.avatar_url ? (
                         <img
@@ -257,10 +256,11 @@ export function Dashboard({
                         member.profiles?.full_name?.charAt(0).toUpperCase()
                       )}
                       
-                      {/* Tooltip */}
-                      <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                      {/* Premium Tooltip */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg opacity-0 translate-y-[-8px] group-hover/member:opacity-100 group-hover/member:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-white/10">
                         {member.profiles?.full_name}
-                      </span>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900/90 rotate-45 translate-y-1" />
+                      </div>
                     </div>
                   ))}
                   {projectMembers.length === 0 && (

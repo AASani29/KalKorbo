@@ -182,17 +182,22 @@ export function TaskCard({ task, project, onStatusChange, onDelete, onUpdate, is
           </div>
 
           {task.assigned_profile ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 relative group/avatar">
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold overflow-hidden shadow-sm border border-white"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold overflow-hidden shadow-sm border border-white relative z-10"
                 style={{ backgroundColor: task.assigned_profile.avatar_color }}
-                title={task.assigned_profile.full_name}
               >
                 {task.assigned_profile.avatar_url ? (
                   <img src={task.assigned_profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   task.assigned_profile.full_name.charAt(0).toUpperCase()
                 )}
+              </div>
+              
+              {/* Custom Tooltip */}
+              <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg opacity-0 translate-y-2 group-hover/avatar:opacity-100 group-hover/avatar:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-20 shadow-xl border border-white/10">
+                {task.assigned_profile.full_name}
+                <div className="absolute top-full right-3 w-2 h-2 bg-gray-900/90 rotate-45 -translate-y-1" />
               </div>
             </div>
           ) : (

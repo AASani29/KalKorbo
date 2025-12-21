@@ -89,14 +89,14 @@ export function HomePage({
       <div className="absolute top-0 right-0 -mr-40 -mt-40 w-[600px] h-[600px] bg-brand-100/40 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 -ml-40 -mb-40 w-[600px] h-[600px] bg-accent-purple/5 rounded-full blur-[100px] pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+      <div className="max-w-[1440px] mx-auto space-y-12 relative z-10">
         
         {/* Premium Header */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-8 border-b border-gray-200">
-          <div className="flex items-center gap-6">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-gray-200">
+          <div className="flex items-center gap-4 md:gap-6">
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-brand-300 to-accent-purple rounded-full opacity-30 group-hover:opacity-100 transition duration-500 blur"></div>
-              <div className="relative w-20 h-20 rounded-full overflow-hidden bg-white border-2 border-white ring-1 ring-gray-100">
+              <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-white border-2 border-white ring-1 ring-gray-100">
                 <img 
                   src={profile?.avatar_url || '/male 1.svg'} 
                   alt="Profile" 
@@ -106,12 +106,9 @@ export function HomePage({
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+                <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tight">
                   Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-accent-purple">{profile?.full_name?.split(' ')[0]}</span>
                 </h1>
-                <div className="px-3 py-1 bg-brand-50 rounded-full border border-brand-100 hidden md:block opacity-0">
-                  <span className="text-[10px] font-bold text-transparent uppercase tracking-wider">Pro Plan</span>
-                </div>
               </div>
               <p className="text-gray-500 font-medium flex items-center gap-2 text-sm">
                 <Calendar className="w-4 h-4 text-brand-400" />
@@ -125,32 +122,32 @@ export function HomePage({
           </div>
         </header>
 
-        {/* New 2-Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Responsive Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-12 gap-8">
           
-          {/* Main Column (Left/Center) - Calendar */}
-          <div className="lg:col-span-8 space-y-6">
+          {/* Main Column (Calendar) - Takes more space on wider screens */}
+          <div className="lg:col-span-8 xl:col-span-9 space-y-6 overflow-hidden">
             {/* Calendar Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-3xl font-black text-gray-900 tracking-tight">Your Schedule</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Your Schedule</h2>
                 <p className="text-sm text-gray-500 font-medium mt-1">Track your tasks and deadlines</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button 
                   onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                  className="w-10 h-10 bg-white hover:bg-gray-50 rounded-xl transition-colors text-gray-600 hover:text-gray-900 shadow-sm border border-gray-200 flex items-center justify-center"
+                  className="w-10 h-10 bg-white hover:bg-gray-50 rounded-xl transition-colors text-gray-600 hover:text-gray-900 shadow-sm border border-gray-200 flex items-center justify-center shrink-0"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <div className="bg-white px-6 py-2.5 rounded-xl shadow-sm border border-gray-200">
-                  <span className="text-base font-bold text-gray-900">
+                <div className="bg-white px-4 md:px-6 py-2.5 rounded-xl shadow-sm border border-gray-200 flex-1 sm:flex-none text-center">
+                  <span className="text-sm md:text-base font-bold text-gray-900 whitespace-nowrap">
                     {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                   </span>
                 </div>
                 <button 
                   onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                  className="w-10 h-10 bg-white hover:bg-gray-50 rounded-xl transition-colors text-gray-600 hover:text-gray-900 shadow-sm border border-gray-200 flex items-center justify-center"
+                  className="w-10 h-10 bg-white hover:bg-gray-50 rounded-xl transition-colors text-gray-600 hover:text-gray-900 shadow-sm border border-gray-200 flex items-center justify-center shrink-0"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -158,7 +155,8 @@ export function HomePage({
             </div>
 
             {/* Calendar Container */}
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-lg overflow-hidden">
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-lg overflow-x-auto scrollbar-hide">
+              <div className="min-w-[700px]">
               {/* Day Headers */}
               <div className="grid grid-cols-7 bg-gradient-to-br from-brand-700 to-brand-800 border-b border-brand-600">
                 {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(day => (
@@ -182,7 +180,7 @@ export function HomePage({
                   // Previous month days
                   for (let i = firstDayOfMonth - 1; i >= 0; i--) {
                     cells.push(
-                      <div key={`prev-${i}`} className="min-h-[140px] p-4 border-r border-b border-gray-100 bg-gray-50/50 last:border-r-0">
+                      <div key={`prev-${i}`} className="min-h-[100px] md:min-h-[120px] p-4 border-r border-b border-gray-100 bg-gray-50/50 last:border-r-0">
                         <span className="text-sm font-bold text-gray-300">{prevMonthDays - i}</span>
                       </div>
                     );
@@ -197,7 +195,7 @@ export function HomePage({
                     cells.push(
                       <div 
                         key={i} 
-                        className={`min-h-[140px] p-4 border-r border-b border-gray-100 last:border-r-0 transition-all duration-200 group relative ${
+                        className={`min-h-[100px] md:min-h-[120px] p-4 border-r border-b border-gray-100 last:border-r-0 transition-all duration-200 group relative ${
                           isToday 
                             ? 'bg-gradient-to-br from-brand-50 to-brand-100/50' 
                             : 'bg-white hover:bg-gray-50'
@@ -229,20 +227,25 @@ export function HomePage({
                             <button 
                               key={idx} 
                               onClick={() => onTaskClick(task.project_id, task.id)}
-                              className={`w-full text-left px-2 py-1.5 rounded-lg text-[11px] font-semibold truncate transition-all flex items-center gap-2 group/task border ${
+                              className={`w-full text-left px-2 py-1.5 rounded-lg text-[11px] font-semibold truncate transition-all flex items-center gap-2 group/task border relative ${
                                 task.status === 'done'
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                                   : task.priority === 'high'
                                   ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                                   : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
                               }`}
-                              title={task.title}
                             >
                               <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                                 task.status === 'done' ? 'bg-emerald-500' :
                                 task.priority === 'high' ? 'bg-rose-500' : 'bg-brand-500'
                               }`} />
                               <span className="truncate">{task.title}</span>
+                              
+                              {/* Premium Tooltip for Truncated Text */}
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg opacity-0 translate-y-2 group-hover/task:opacity-100 group-hover/task:translate-y-0 transition-all duration-200 pointer-events-none whitespace-normal min-w-[120px] max-w-[200px] z-20 shadow-xl border border-white/10 text-center">
+                                {task.title}
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900/90 rotate-45 -translate-y-1" />
+                              </div>
                             </button>
                           ))}
                           {dayTasks.length > 3 && (
@@ -265,7 +268,7 @@ export function HomePage({
                   const remainingCells = 42 - totalCells;
                   for (let i = 1; i <= remainingCells; i++) {
                     cells.push(
-                      <div key={`next-${i}`} className="min-h-[140px] p-4 border-r border-b border-gray-100 bg-gray-50/50 last:border-r-0">
+                      <div key={`next-${i}`} className="min-h-[100px] md:min-h-[120px] p-4 border-r border-b border-gray-100 bg-gray-50/50 last:border-r-0">
                         <span className="text-sm font-bold text-gray-300">{i}</span>
                       </div>
                     );
@@ -274,10 +277,11 @@ export function HomePage({
                   return cells;
                 })()}
               </div>
+              </div>
             </div>
 
             {/* Legend */}
-            <div className="flex items-center justify-center gap-6 text-xs font-semibold">
+            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-[10px] md:text-xs font-semibold">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-brand-500" />
                 <span className="text-gray-600">Regular Task</span>
@@ -293,50 +297,51 @@ export function HomePage({
             </div>
           </div>
 
-          {/* Right Sidebar - Stats & Actions */}
-          <div className="lg:col-span-4 space-y-6">
+          {/* Right Sidebar - Stats & Actions (Smaller span on wider screens) */}
+          <div className="lg:col-span-4 xl:col-span-3 space-y-6">
             
             {/* Action Card First for Quick Access */}
             <button 
               onClick={onStartProject}
-              className="w-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 text-white shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group text-left relative overflow-hidden border border-gray-700"
+              className="w-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 md:p-8 text-white shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group text-left relative overflow-hidden border border-gray-700"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-brand-500/20 transition-colors" />
-              <div className="relative z-10 flex items-center justify-between">
-                <div>
-                  <h4 className="text-2xl font-bold text-white group-hover:text-brand-200 transition-colors">Start Project</h4>
-                  <p className="text-sm text-gray-400 mt-2 font-medium group-hover:text-gray-300">Create a new workspace</p>
+              <div className="relative z-10 flex flex-row items-center justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-xl md:text-2xl font-bold text-white group-hover:text-brand-200 transition-colors truncate">Start Project</h4>
+                  <p className="text-xs text-gray-400 font-medium group-hover:text-gray-300 truncate">New workspace</p>
                 </div>
-                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white backdrop-blur-md group-hover:bg-brand-500 group-hover:text-white transition-all duration-300 border border-white/5">
-                  <Plus className="w-7 h-7" />
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white backdrop-blur-md group-hover:bg-brand-500 group-hover:text-white transition-all duration-300 border border-white/5 shrink-0 shadow-lg">
+                  <Plus className="w-6 h-6" />
                 </div>
               </div>
             </button>
 
             {/* Stats Grid - Side by Side */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
               {cards.map((card, i) => (
-                <div key={i} className={`bg-gradient-to-br from-white to-gray-50 p-4 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:border-gray-300 transition-all duration-300 group relative overflow-hidden`}>
-                  {/* Decorative background element */}
+                <div key={i} className="bg-gradient-to-br from-white to-gray-50 p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:border-gray-300 transition-all duration-300 group relative overflow-hidden flex flex-col">
                   <div className={`absolute -right-6 -top-6 w-24 h-24 ${card.bgColor} rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300`} />
                   
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-center mb-3">
-                      <div className={`w-10 h-10 ${card.bgColor} ${card.color} rounded-xl flex items-center justify-center shadow-sm`}>
-                        <card.icon className="w-5 h-5" strokeWidth={2.5} />
-                      </div>
+                  <div className="relative z-10 flex flex-col items-center text-center space-y-3">
+                    <div className={`w-10 h-10 md:w-12 md:h-12 ${card.bgColor} ${card.color} rounded-xl flex items-center justify-center shadow-sm shrink-0`}>
+                      <card.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
                     </div>
                     
-                    <div className="text-center space-y-1">
-                      <h3 className="text-2xl font-black text-gradient-to-br tracking-tight">{card.value}</h3>
-                      <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wider leading-tight">{card.label}</p>
+                    <div className="w-full min-w-0">
+                      <h3 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none mb-1">{card.value}</h3>
+                      <p className="text-[9px] md:text-[10px] font-black text-gray-500 uppercase tracking-widest break-words flex flex-wrap justify-center px-1">
+                        {card.label.split(' ').map((word, index) => (
+                          <span key={index} className="mx-0.5">{word}</span>
+                        ))}
+                      </p>
                     </div>
                     
                     {/* Progress indicator line */}
-                    <div className="mt-3 h-1 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden w-full max-w-[60px] mx-auto opacity-60">
                       <div 
                         className={`h-full ${card.color.replace('text-', 'bg-')} transition-all duration-500`}
-                        style={{ width: `${Math.min((card.value / stats.totalTasks) * 100, 100)}%` }}
+                        style={{ width: `${Math.min((card.value / Math.max(stats.totalTasks, 1)) * 100, 100)}%` }}
                       />
                     </div>
                   </div>
