@@ -23,7 +23,7 @@ export function Dashboard({
   initialTaskId?: string | null;
 }) {
   const { profile } = useAuth();
-  const { showToast } = useToast();
+  const { showToast, removeToast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(initialTaskId);
@@ -72,7 +72,7 @@ export function Dashboard({
       })
       .on('broadcast', { event: 'wave' }, ({ payload }) => {
         if (payload.toId === profile.id) {
-          showToast('success', (
+          const toastId = showToast('success', (
             <div className="flex flex-col gap-2 mt-1">
               <p>
                 <span className="font-bold text-brand-600">{payload.fromName}</span> waved at you! 👋
@@ -81,13 +81,14 @@ export function Dashboard({
                 onClick={(e) => {
                   e.stopPropagation();
                   handleWave(payload.fromId, payload.fromName);
+                  removeToast(toastId);
                 }}
                 className="w-fit px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm shadow-brand-100 flex items-center gap-1.5 active:scale-95"
               >
                 Wave Back
               </button>
             </div>
-          ) as any);
+          ) as any, 0); // 0 means persistent
         }
       })
       .subscribe(async (status) => {

@@ -11,7 +11,8 @@ type Toast = {
 };
 
 type ToastContextType = {
-  showToast: (type: ToastType, message: ReactNode) => void;
+  showToast: (type: ToastType, message: ReactNode, duration?: number) => string;
+  removeToast: (id: string) => void;
 };
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -19,21 +20,25 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (type: ToastType, message: ReactNode) => {
+  const showToast = (type: ToastType, message: ReactNode, duration: number = 5000) => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, type, message }]);
 
-    // Start exit animation
-    setTimeout(() => {
-      setToasts((prev) => 
-        prev.map(t => t.id === id ? { ...t, isExiting: true } : t)
-      );
-    }, 4500);
+    if (duration > 0) {
+      // Start exit animation
+      setTimeout(() => {
+        setToasts((prev) => 
+          prev.map(t => t.id === id ? { ...t, isExiting: true } : t)
+        );
+      }, duration - 500);
 
-    // Remove from DOM
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, 5000);
+      // Remove from DOM
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((toast) => toast.id !== id));
+      }, duration);
+    }
+
+    return id;
   };
 
   const removeToast = (id: string) => {
@@ -77,7 +82,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, removeToast }}>
       {children}
       <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 max-w-md w-full sm:w-auto overflow-visible pointer-events-none">
         {toasts.map((toast) => (
