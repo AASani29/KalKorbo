@@ -47,12 +47,12 @@ export function Sidebar({
       {/* Floating Sidebar Container */}
       <div className="absolute inset-0 m-4 bg-white rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
         {/* Header with Logo */}
-        <div className={`border-b border-gray-50 transition-all duration-300 ${isCollapsed ? 'p-3' : 'p-6'}`}>
+        <div className={`border-b border-gray-50 transition-all duration-300 select-none ${isCollapsed ? 'p-3' : 'p-6'}`}>
           <div className="flex items-center justify-between">
             {!isCollapsed ? (
               <>
-                <div className="flex items-center gap-3">
-                  <img src="/Daekho1.svg" alt="KalKorbo" className="h-14 w-auto" />
+                <div className="flex items-center gap-3 select-none cursor-default">
+                  <img src="/Daekho1.svg" alt="KalKorbo" className="h-14 w-auto pointer-events-none" />
                 </div>
                 <button
                   onClick={() => setIsCollapsed(!isCollapsed)}
@@ -227,7 +227,7 @@ export function Sidebar({
               <Home className="w-5 h-5 text-gray-500 group-hover:text-brand-600 transition-colors" />
             </div>
             {!isCollapsed && (
-              <span className="text-sm font-bold text-gray-700 group-hover:text-brand-700 transition-colors">
+              <span className="text-sm font-bold text-gray-700 group-hover:text-brand-700 transition-colors select-none">
                 Home
               </span>
             )}
