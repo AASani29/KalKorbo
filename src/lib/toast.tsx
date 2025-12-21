@@ -101,11 +101,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </div>
             </div>
 
-            <div className="flex-1 min-w-0 pr-6">
-              <div className="text-sm font-bold text-gray-900 mb-0.5 capitalize">
-                {toast.type}
-              </div>
-              <div className="text-[13px] text-gray-600 font-medium leading-relaxed">
+            <div className="flex-1 min-w-0 pr-6 pt-1">
+              <div className="text-[13px] text-gray-600 font-semibold leading-relaxed">
                 {toast.message}
               </div>
             </div>
