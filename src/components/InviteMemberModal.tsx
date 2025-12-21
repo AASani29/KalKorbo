@@ -29,7 +29,7 @@ export function InviteMemberModal({ project, onClose, onInviteSent }: InviteMemb
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('email', email.toLowerCase())
+        .ilike('email', email)
         .single();
 
       if (profileError || !profileData) {
@@ -57,8 +57,8 @@ export function InviteMemberModal({ project, onClose, onInviteSent }: InviteMemb
         .from('project_invitations')
         .select('id, status')
         .eq('project_id', project.id)
-        .eq('invitee_email', email.toLowerCase())
-        .single();
+        .ilike('invitee_email', email)
+        .maybeSingle();
 
       if (existingInvitation) {
         if (existingInvitation.status === 'pending') {

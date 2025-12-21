@@ -56,8 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('Attempting sign in for:', email);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const normalizedEmail = email.toLowerCase();
+    console.log('Attempting sign in for:', normalizedEmail);
+    const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
     if (error) {
       console.error('Sign in error:', error);
       throw error;
@@ -66,8 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    console.log('Attempting sign up for:', email);
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const normalizedEmail = email.toLowerCase();
+    const { data, error } = await supabase.auth.signUp({ email: normalizedEmail, password });
     if (error) {
       console.error('Sign up error:', error);
       throw error;
@@ -80,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const newProfile: Profile = {
         id: data.user.id,
-        email,
+        email: normalizedEmail,
         full_name: fullName,
         avatar_color: randomColor,
         onboarding_completed: false,

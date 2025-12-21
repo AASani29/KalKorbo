@@ -26,6 +26,7 @@ export function InvitationsModal({ onClose, onInvitationAccepted }: InvitationsM
   }, []);
 
   const loadInvitations = async () => {
+    if (!profile) return;
     setLoading(true);
     const { data } = await supabase
       .from('project_invitations')
@@ -34,7 +35,7 @@ export function InvitationsModal({ onClose, onInvitationAccepted }: InvitationsM
         project:projects(*),
         inviter:profiles!project_invitations_inviter_id_fkey(full_name, avatar_url, avatar_color)
       `)
-      .or(`invitee_email.eq.${profile?.email},invitee_id.eq.${profile?.id}`)
+      .or(`invitee_email.ilike.${profile.email},invitee_id.eq.${profile.id}`)
       .order('created_at', { ascending: false });
 
     if (data) {

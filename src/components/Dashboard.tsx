@@ -105,11 +105,12 @@ export function Dashboard({
   };
 
   const loadPendingInvitations = async () => {
+    if (!profile) return;
     try {
       const { data } = await supabase
         .from('project_invitations')
         .select('id')
-        .or(`invitee_email.eq.${profile?.email},invitee_id.eq.${profile?.id}`)
+        .or(`invitee_email.ilike.${profile.email},invitee_id.eq.${profile.id}`)
         .eq('status', 'pending');
 
       if (data) {
