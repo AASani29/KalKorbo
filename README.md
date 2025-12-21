@@ -1,41 +1,42 @@
-# TrackerForURewards
+# URewards - Premium Collaborative Task Tracker
 
-A modern, collaborative issue tracking application built with React, TypeScript, and Supabase.
+URewards is a modern, high-performance task management application built for teams that value speed, clarity, and aesthetics.
 
-## Features
+## ✨ Key Features
 
-- 🔐 User authentication (sign up/sign in)
-- 📁 Multiple project management
-- 📋 Kanban-style task board (To Do, In Progress, Done)
-- 🎯 Task priority levels (Low, Medium, High)
-- 👥 Team collaboration and member management
-- ⚡ Real-time updates
-- 🎨 Project color customization
-- 📱 Responsive design
+- **Real-time Collaboration**: See who's online and wave at team members (Google Docs style presence).
+- **Intelligent Dashboard**: A premium, glassmorphic UI with task stats, a dynamic calendar, and interactive widgets.
+- **Voice Assistant**: Natural language task management powered by Groq (Llama 3.3).
+- **Pro Design**: Beautifully crafted "Create" and "Edit" forms with a professional SaaS aesthetic.
+- **Advanced Task Management**: Drag-and-drop support, status tracking, and team assignments.
 
-## Quick Start
+## 🚀 Getting Started
 
-1. **Install dependencies**
+### Prerequisites
+
+- Node.js (v18+)
+- Supabase account
+- Groq API Key (for voice commands)
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
    ```bash
    npm install
    ```
-
-2. **Set up Supabase** (see [SETUP.md](./SETUP.md) for detailed instructions)
-   - Create a Supabase project
-   - Run the database migration
-   - Configure environment variables
-
-3. **Run the app**
+3. Set up your environment variables in `.env`:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_GROQ_API_KEY`
+4. Run the development server:
    ```bash
    npm run dev
    ```
 
-For detailed setup instructions, see [SETUP.md](./SETUP.md)
+## 🛠 Tech Stack
 
-## Tech Stack
-
-- React 18 + TypeScript
-- Vite
-- TailwindCSS
-- Supabase (PostgreSQL + Auth + Realtime)
-- Lucide React (icons)
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Backend/Realtime**: Supabase
+- **Icons**: Lucide React
+- **AI/NLP**: Groq (Llama 3.3 & Whisper)
