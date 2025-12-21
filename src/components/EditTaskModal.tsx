@@ -92,94 +92,89 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-300 scrollbar-hide">
+    <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-[2px] flex items-center justify-center p-4 z-[60] animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col relative animate-in zoom-in-95 duration-200 overflow-hidden border border-gray-100">
         {/* Header */}
-        <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30 sticky top-0 z-10 backdrop-blur-md">
+        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Edit Task</h2>
-            <p className="text-xs text-gray-500 mt-0.5">{project.name}</p>
+            <h2 className="text-xl font-bold text-gray-900 tracking-tight">Edit Task</h2>
+            <p className="text-sm text-gray-500 font-medium">{project.name}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-gray-100"
+            className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-hide">
           {/* Title Input */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+          <div className="space-y-1.5">
+            <label className="text-[13px] font-semibold text-gray-700 ml-0.5">
               Task Title
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-gray-900 font-medium placeholder:text-gray-400 outline-none shadow-sm"
               placeholder="Task title"
               required
             />
           </div>
 
           {/* Description Input */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+          <div className="space-y-1.5">
+            <label className="text-[13px] font-semibold text-gray-700 ml-0.5">
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400 resize-none"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-gray-900 font-medium placeholder:text-gray-400 resize-none outline-none shadow-sm"
               placeholder="Task description"
               rows={4}
             />
           </div>
 
-          {/* Status Selection */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-              Status
-            </label>
-            <div className="relative group">
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as Task['status'])}
-                className="w-full px-5 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-700 font-bold text-sm appearance-none cursor-pointer"
-              >
-                <option value="todo">To Do</option>
-                <option value="in_progress">In Progress</option>
-                <option value="done">Done</option>
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none border-l border-gray-200 pl-2">
-                <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-400" />
+          <div className="grid grid-cols-2 gap-4">
+            {/* Status Selection */}
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-gray-700 ml-0.5">
+                Status
+              </label>
+              <div className="relative group">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as Task['status'])}
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-gray-700 font-bold text-sm appearance-none cursor-pointer outline-none shadow-sm"
+                >
+                  <option value="todo">To Do</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-400" />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Priority & Assignee Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Priority Selection */}
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-gray-700 ml-0.5">
                 Priority
               </label>
-              <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100">
+              <div className="flex p-1 bg-gray-50 border border-gray-200 rounded-xl">
                 {(['low', 'medium', 'high'] as Task['priority'][]).map((p) => (
                   <button
                     key={p}
                     type="button"
                     onClick={() => setPriority(p)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                    className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
                       priority === p
-                        ? p === 'low'
-                          ? 'bg-white text-gray-600 shadow-sm'
-                          : p === 'medium'
-                          ? 'bg-white text-brand-600 shadow-sm'
-                          : 'bg-white text-red-600 shadow-sm'
-                        : 'text-gray-400 hover:text-gray-600'
+                        ? 'bg-white text-brand-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
                     {p}
@@ -187,17 +182,19 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
                 ))}
               </div>
             </div>
+          </div>
 
+          <div className="grid grid-cols-2 gap-4">
             {/* Assignee Selection */}
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                Assign To
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-gray-700 ml-0.5">
+                Assignee
               </label>
               <div className="relative group">
                 <select
                   value={assignedTo}
                   onChange={(e) => setAssignedTo(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-700 font-bold text-sm appearance-none cursor-pointer"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-gray-700 font-semibold text-sm appearance-none cursor-pointer outline-none shadow-sm"
                 >
                   <option value="">Unassigned</option>
                   {members.map((member) => (
@@ -206,37 +203,34 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
                     </option>
                   ))}
                 </select>
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
                   <User className="w-4 h-4 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
-                </div>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none border-l border-gray-200 pl-2">
-                  <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-400" />
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Deadline Selection */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-              Deadline
-            </label>
-            <div className="relative group">
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-700 font-bold text-sm cursor-pointer"
-              />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Calendar className="w-4 h-4 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
+            {/* Deadline Selection */}
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-gray-700 ml-0.5">
+                Deadline
+              </label>
+              <div className="relative group">
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-gray-700 font-semibold text-sm cursor-pointer outline-none shadow-sm"
+                />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <Calendar className="w-4 h-4 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
+                </div>
               </div>
             </div>
           </div>
 
           {/* Labels Input */}
           <div className="space-y-2">
-            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+            <label className="text-[13px] font-semibold text-gray-700 ml-0.5">
               Labels
             </label>
             <div className="space-y-3">
@@ -252,19 +246,19 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
                         handleAddLabel();
                       }
                     }}
-                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:bg-white transition-all text-gray-900 font-medium placeholder:text-gray-400"
-                    placeholder="Type a label..."
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-gray-900 font-semibold text-sm placeholder:text-gray-400 outline-none shadow-sm"
+                    placeholder="Add labels..."
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    <Tag className="w-4 h-4 text-gray-300" />
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Tag className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={handleAddLabel}
-                  className="px-6 bg-brand-50 text-brand-600 font-bold rounded-2xl hover:bg-brand-100 transition-colors border border-brand-100"
+                  className="p-3 bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all"
                 >
-                  Add
+                  <Tag className="w-4 h-4" />
                 </button>
               </div>
               
@@ -273,7 +267,7 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
                   {tags.map((tag, i) => (
                     <span 
                       key={i}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-brand-100 animate-in zoom-in duration-200"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 rounded-lg text-[10px] font-bold border border-brand-100 uppercase tracking-tight"
                     >
                       {tag}
                       <button
@@ -291,9 +285,9 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
           </div>
 
           {task.creator_profile && (
-            <div className="bg-gray-50/50 rounded-[2rem] p-6 flex items-center gap-4 border border-gray-100">
+            <div className="bg-gray-50/50 rounded-2xl p-4 flex items-center gap-4 border border-gray-100 shadow-sm">
               <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold overflow-hidden shadow-sm border-2 border-white"
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold overflow-hidden shadow-sm border border-white shrink-0"
                 style={{ backgroundColor: task.creator_profile.avatar_color }}
               >
                 {task.creator_profile.avatar_url ? (
@@ -302,48 +296,48 @@ export function EditTaskModal({ task, project, onClose, onUpdate }: EditTaskModa
                   task.creator_profile.full_name.charAt(0).toUpperCase()
                 )}
               </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">Created by</p>
-                <p className="text-sm font-bold text-gray-900">{task.creator_profile.full_name}</p>
-                <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                  {new Date(task.created_at).toLocaleString()}
-                </p>
+              <div className="min-w-0">
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Created</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-gray-900 truncate">{task.creator_profile.full_name}</p>
+                  <span className="text-[10px] text-gray-400 font-medium">• {new Date(task.created_at).toLocaleDateString()}</span>
+                </div>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-2xl text-xs font-bold flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+            <div className="bg-rose-50 border border-rose-100 text-rose-600 px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
               {error}
             </div>
           )}
-
-          {/* Footer Actions */}
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-6 py-4 text-gray-500 font-bold hover:text-gray-700 transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-4 bg-brand-600 text-white rounded-2xl font-bold shadow-xl shadow-brand-100 hover:bg-brand-700 hover:shadow-brand-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                'Update Task'
-              )}
-            </button>
-          </div>
         </form>
+
+        {/* Footer Actions */}
+        <div className="p-8 border-t border-gray-100 flex items-center gap-4 bg-gray-50/50">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-6 py-3.5 text-gray-500 font-bold hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex-[2] px-6 py-3.5 bg-brand-600 text-white rounded-xl font-bold shadow-lg shadow-brand-200 hover:bg-brand-700 hover:translate-y-[-1px] active:translate-y-[0px] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              'Update Task'
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
