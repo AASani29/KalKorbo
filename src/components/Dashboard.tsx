@@ -41,14 +41,11 @@ export function Dashboard({
     localStorage.setItem('kalkorbo_show_profile', showProfile.toString());
   }, [showProfile]);
 
-  // Handle Realtime Presence for Active Users
+  // Handle Global Realtime Presence
   useEffect(() => {
-    if (!selectedProject || !profile) {
-      setOnlineUsers([]);
-      return;
-    }
+    if (!profile) return;
 
-    const channel = supabase.channel(`project_presence:${selectedProject.id}`, {
+    const channel = supabase.channel('global_platform_presence', {
       config: {
         presence: {
           key: profile.id,
@@ -61,7 +58,7 @@ export function Dashboard({
         const state = channel.presenceState();
         const users = Object.values(state).flat().map((p: any) => p.user);
         
-        // De-duplicate users by ID (in case of multiple tabs)
+        // De-duplicate users by ID
         const uniqueUsers = users.reduce((acc: any[], current: any) => {
           if (current && !acc.find(u => u.id === current.id)) {
             acc.push(current);
@@ -79,6 +76,7 @@ export function Dashboard({
               full_name: profile.full_name,
               avatar_url: profile.avatar_url,
               avatar_color: profile.avatar_color,
+              active_project_id: selectedProject?.id || null
             }
           });
         }
@@ -87,7 +85,7 @@ export function Dashboard({
     return () => {
       channel.unsubscribe();
     };
-  }, [selectedProject, profile]);
+  }, [profile, selectedProject?.id]); // Re-track whenever project changes
 
   useEffect(() => {
     loadProjects();
@@ -261,14 +259,11 @@ export function Dashboard({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {onlineUsers.length > 0 && (
-                    <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
-                      <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
-                      Active 
-                    </span>
-                  )}
+                  {/* Google Doc-like Project Specific Online Users */}
                   <div className="flex -space-x-2">
-                    {onlineUsers.map((user) => (
+                    {onlineUsers
+                      .filter(user => user.active_project_id === selectedProject.id)
+                      .map((user) => (
                       <div
                         key={user.id}
                         className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden relative group/member"
@@ -294,12 +289,17 @@ export function Dashboard({
                         </div>
                       </div>
                     ))}
-                    {onlineUsers.length === 0 && (
-                      <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
-                        0
-                      </div>
-                    )}
                   </div>
+
+                  {/* Total Platform Online Indicator */}
+                  {onlineUsers.length > 0 && (
+                    <div className="flex items-center gap-2 pl-4 border-l border-gray-100">
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                        {onlineUsers.length} Online
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
