@@ -73,11 +73,16 @@ export function Dashboard({
       .on('broadcast', { event: 'wave' }, ({ payload }) => {
         if (payload.toId === profile.id) {
           showToast('success', (
-            <div className="flex items-center gap-3">
-              <span>👋 {payload.fromName} waved at you!</span>
+            <div className="flex flex-col gap-2 mt-1">
+              <p>
+                <span className="font-bold text-emerald-600">{payload.fromName}</span> waved at you! 👋
+              </p>
               <button 
-                onClick={() => handleWave(payload.fromId, payload.fromName)}
-                className="px-2 py-1 bg-white/20 hover:bg-white/30 rounded text-[10px] font-bold transition-all"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleWave(payload.fromId, payload.fromName);
+                }}
+                className="w-fit px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm shadow-emerald-100 flex items-center gap-1.5 active:scale-95"
               >
                 Wave Back
               </button>
