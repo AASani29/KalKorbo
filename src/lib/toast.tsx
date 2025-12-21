@@ -48,22 +48,31 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const getIcon = (type: ToastType) => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
+        return <CheckCircle2 className="w-5 h-5 text-[#3455a0]" />;
       case 'error':
         return <XCircle className="w-5 h-5 text-rose-500" />;
       case 'warning':
         return <AlertCircle className="w-5 h-5 text-amber-500" />;
       case 'info':
-        return <Info className="w-5 h-5 text-sky-500" />;
+        return <Info className="w-5 h-5 text-[#3455a0]" />;
     }
   };
 
   const getGlow = (type: ToastType) => {
     switch (type) {
-      case 'success': return 'shadow-[0_8px_32px_rgba(16,185,129,0.15)] ring-emerald-500/20';
+      case 'success': return 'shadow-[0_8px_32px_rgba(52,85,160,0.15)] ring-[#3455a0]/20';
       case 'error': return 'shadow-[0_8px_32px_rgba(244,63,94,0.15)] ring-rose-500/20';
       case 'warning': return 'shadow-[0_8px_32px_rgba(245,158,11,0.15)] ring-amber-500/20';
-      case 'info': return 'shadow-[0_8px_32px_rgba(14,165,233,0.15)] ring-sky-500/20';
+      case 'info': return 'shadow-[0_8px_32px_rgba(52,85,160,0.15)] ring-[#3455a0]/20';
+    }
+  };
+
+  const getAccent = (type: ToastType) => {
+    switch (type) {
+      case 'success': return 'bg-[#3455a0]';
+      case 'error': return 'bg-rose-500';
+      case 'warning': return 'bg-amber-500';
+      case 'info': return 'bg-[#3455a0]';
     }
   };
 
@@ -89,11 +98,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             `}
           >
             {/* Animated background accent */}
-            <div className={`absolute top-0 left-0 w-1.5 h-full transition-all duration-300 ${
-              toast.type === 'success' ? 'bg-emerald-500' :
-              toast.type === 'error' ? 'bg-rose-500' :
-              toast.type === 'warning' ? 'bg-amber-500' : 'bg-sky-500'
-            }`} />
+            <div className={`absolute top-0 left-0 w-1.5 h-full transition-all duration-300 ${getAccent(toast.type)}`} />
 
             <div className="flex-shrink-0 mt-0.5">
               <div className={`p-2 rounded-xl bg-white shadow-sm ring-1 ring-black/5`}>
@@ -117,11 +122,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             {/* Progress Bar */}
             <div className="absolute bottom-0 left-1.5 right-0 h-[3px] bg-gray-100/50">
               <div 
-                className={`h-full transition-all duration-[4500ms] ease-linear ${
-                  toast.type === 'success' ? 'bg-emerald-500' :
-                  toast.type === 'error' ? 'bg-rose-500' :
-                  toast.type === 'warning' ? 'bg-amber-500' : 'bg-sky-500'
-                }`}
+                className={`h-full transition-all duration-[4500ms] ease-linear ${getAccent(toast.type)}`}
                 style={{ width: toast.isExiting ? '0%' : '100%' }}
               />
             </div>
