@@ -32,7 +32,7 @@ export function Dashboard({
   const [loading, setLoading] = useState(true);
   const [pendingInvitationsCount, setPendingInvitationsCount] = useState(0);
   const [isMember, setIsMember] = useState(false);
-  const [projectMembers, setProjectMembers] = useState<any[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [showProfile, setShowProfile] = useState(() => {
     return localStorage.getItem('kalkorbo_show_profile') === 'true';
   });
@@ -40,6 +40,54 @@ export function Dashboard({
   useEffect(() => {
     localStorage.setItem('kalkorbo_show_profile', showProfile.toString());
   }, [showProfile]);
+
+  // Handle Realtime Presence for Active Users
+  useEffect(() => {
+    if (!selectedProject || !profile) {
+      setOnlineUsers([]);
+      return;
+    }
+
+    const channel = supabase.channel(`project_presence:${selectedProject.id}`, {
+      config: {
+        presence: {
+          key: profile.id,
+        },
+      },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const users = Object.values(state).flat().map((p: any) => p.user);
+        
+        // De-duplicate users by ID (in case of multiple tabs)
+        const uniqueUsers = users.reduce((acc: any[], current: any) => {
+          if (current && !acc.find(u => u.id === current.id)) {
+            acc.push(current);
+          }
+          return acc;
+        }, []);
+        
+        setOnlineUsers(uniqueUsers);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            user: {
+              id: profile.id,
+              full_name: profile.full_name,
+              avatar_url: profile.avatar_url,
+              avatar_color: profile.avatar_color,
+            }
+          });
+        }
+      });
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [selectedProject, profile]);
 
   useEffect(() => {
     loadProjects();
@@ -49,7 +97,6 @@ export function Dashboard({
   useEffect(() => {
     if (selectedProject) {
       checkMembership();
-      loadProjectMembers();
       localStorage.setItem('kalkorbo_project_id', selectedProject.id);
     }
   }, [selectedProject]);
@@ -75,32 +122,6 @@ export function Dashboard({
       console.error('Error loading projects:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadProjectMembers = async () => {
-    if (!selectedProject) return;
-    
-    try {
-      const { data } = await supabase
-        .from('project_members')
-        .select(`
-          id,
-          role,
-          profiles (
-            id,
-            full_name,
-            avatar_url,
-            avatar_color
-          )
-        `)
-        .eq('project_id', selectedProject.id);
-
-      if (data) {
-        setProjectMembers(data);
-      }
-    } catch (error) {
-      console.error('Error loading project members:', error);
     }
   };
 
@@ -239,35 +260,46 @@ export function Dashboard({
                   )}
                 </div>
 
-                <div className="flex -space-x-2">
-                  {projectMembers.map((member) => (
-                    <div
-                      key={member.id}
-                      className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden relative group/member"
-                      style={{ backgroundColor: member.profiles?.avatar_color || '#94a3b8' }}
-                    >
-                      {member.profiles?.avatar_url ? (
-                        <img
-                          src={member.profiles.avatar_url}
-                          alt={member.profiles.full_name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        member.profiles?.full_name?.charAt(0).toUpperCase()
-                      )}
-                      
-                      {/* Premium Tooltip */}
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg opacity-0 translate-y-[-8px] group-hover/member:opacity-100 group-hover/member:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-white/10">
-                        {member.profiles?.full_name}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900/90 rotate-45 translate-y-1" />
-                      </div>
-                    </div>
-                  ))}
-                  {projectMembers.length === 0 && (
-                    <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
-                      0
-                    </div>
+                <div className="flex items-center gap-3">
+                  {onlineUsers.length > 0 && (
+                    <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                      <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+                      Active 
+                    </span>
                   )}
+                  <div className="flex -space-x-2">
+                    {onlineUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden relative group/member"
+                        style={{ backgroundColor: user.avatar_color || '#94a3b8' }}
+                      >
+                        {user.avatar_url ? (
+                          <img
+                            src={user.avatar_url}
+                            alt={user.full_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          user.full_name?.charAt(0).toUpperCase()
+                        )}
+                        
+                        {/* Online Status Indicator */}
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full z-10" />
+
+                        {/* Premium Tooltip */}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg opacity-0 translate-y-[-8px] group-hover/member:opacity-100 group-hover/member:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-white/10">
+                          {user.full_name}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900/90 rotate-45 translate-y-1" />
+                        </div>
+                      </div>
+                    ))}
+                    {onlineUsers.length === 0 && (
+                      <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">
+                        0
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -323,7 +355,6 @@ export function Dashboard({
           project={selectedProject}
           onClose={() => setShowManageMembers(false)}
           onInviteMember={() => setShowInviteMember(true)}
-          onMembersChange={loadProjectMembers}
         />
       )}
 
@@ -368,7 +399,7 @@ export function Dashboard({
           loadProjects();
           loadPendingInvitations();
           if (selectedProject) {
-            loadProjectMembers();
+            // No longer using internal members list
           }
         }}
       />
