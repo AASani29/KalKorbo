@@ -11,6 +11,7 @@ import { ProfilePage } from './ProfilePage';
 import { HomePage } from './HomePage';
 import { VoiceAssistant } from './VoiceAssistant/VoiceAssistant';
 import { Sparkles, Github, Globe } from 'lucide-react';
+import { useToast } from '../lib/toast';
 
 export function Dashboard({ 
   initialShowCreateProject = false,
@@ -22,6 +23,7 @@ export function Dashboard({
   initialTaskId?: string | null;
 }) {
   const { profile } = useAuth();
+  const { showToast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(initialTaskId);
@@ -68,6 +70,21 @@ export function Dashboard({
         
         setOnlineUsers(uniqueUsers);
       })
+      .on('broadcast', { event: 'wave' }, ({ payload }) => {
+        if (payload.toId === profile.id) {
+          showToast('success', (
+            <div className="flex items-center gap-3">
+              <span>👋 {payload.fromName} waved at you!</span>
+              <button 
+                onClick={() => handleWave(payload.fromId, payload.fromName)}
+                className="px-2 py-1 bg-white/20 hover:bg-white/30 rounded text-[10px] font-bold transition-all"
+              >
+                Wave Back
+              </button>
+            </div>
+          ) as any);
+        }
+      })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({
@@ -82,10 +99,14 @@ export function Dashboard({
         }
       });
 
+    // Make channel accessible for waving
+    (window as any).presenceChannel = channel;
+
     return () => {
       channel.unsubscribe();
+      delete (window as any).presenceChannel;
     };
-  }, [profile, selectedProject?.id]); // Re-track whenever project changes
+  }, [profile, selectedProject?.id]);
 
   useEffect(() => {
     loadProjects();
@@ -172,6 +193,22 @@ export function Dashboard({
     if (project) {
       setSelectedProject(project);
       setActiveTaskId(taskId);
+    }
+  };
+
+  const handleWave = (toId: string, toName: string) => {
+    const channel = (window as any).presenceChannel;
+    if (channel && profile) {
+      channel.send({
+        type: 'broadcast',
+        event: 'wave',
+        payload: {
+          fromId: profile.id,
+          fromName: profile.full_name,
+          toId: toId
+        }
+      });
+      showToast('success', `Sent a wave to ${toName}! 👋`);
     }
   };
 
@@ -266,7 +303,8 @@ export function Dashboard({
                       .map((user) => (
                       <div
                         key={user.id}
-                        className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden relative group/member"
+                        onClick={() => user.id !== profile?.id && handleWave(user.id, user.full_name)}
+                        className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden relative group/member transition-transform hover:scale-110 active:scale-95 ${user.id !== profile?.id ? 'cursor-pointer' : 'cursor-default'}`}
                         style={{ backgroundColor: user.avatar_color || '#94a3b8' }}
                       >
                         {user.avatar_url ? (
@@ -282,9 +320,14 @@ export function Dashboard({
                         {/* Online Status Indicator */}
                         <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full z-10" />
 
-                        {/* Premium Tooltip */}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900/90 backdrop-blur-sm text-white text-[10px] font-bold rounded-lg opacity-0 translate-y-[-8px] group-hover/member:opacity-100 group-hover/member:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-white/10">
-                          {user.full_name}
+                        {/* Premium Popover */}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900/90 backdrop-blur-md text-white rounded-xl opacity-0 translate-y-[-8px] group-hover/member:opacity-100 group-hover/member:translate-y-0 transition-all duration-200 pointer-events-none z-50 shadow-2xl border border-white/10 min-w-[120px]">
+                          <p className="text-[10px] font-bold truncate mb-1">{user.full_name}</p>
+                          {user.id !== profile?.id && (
+                            <div className="flex items-center gap-1 text-[9px] text-brand-400 font-bold">
+                              <span>Click to wave 👋</span>
+                            </div>
+                          )}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900/90 rotate-45 translate-y-1" />
                         </div>
                       </div>
