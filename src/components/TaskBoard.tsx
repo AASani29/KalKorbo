@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, Project, Task, Profile, ProjectMember } from '../lib/supabase';
-import { Plus, Check, Search, X, Users } from 'lucide-react';
+import { Plus, Check, Search, X, Users, Tag, ChevronDown } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { CreateTaskModal } from './CreateTaskModal';
 import { EditTaskModal } from './EditTaskModal';
@@ -27,6 +27,8 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
   const [tasks, setTasks] = useState<TaskWithProfile[]>([]);
   const [members, setMembers] = useState<MemberWithProfile[]>([]);
   const [filterUserId, setFilterUserId] = useState<string | null>(null);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [showTagMenu, setShowTagMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<TaskWithProfile | null>(null);
@@ -184,6 +186,8 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
     setDragOverColumn(null);
   };
 
+  const allTags = Array.from(new Set(tasks.flatMap(task => task.tags || []))).sort();
+
   const columns: { status: Task['status']; label: string; color: string }[] = [
     { status: 'todo', label: 'To Do', color: 'bg-slate-50/30 border-gray-200' },
     { status: 'in_progress', label: 'In Progress', color: 'bg-slate-50/30 border-gray-200' },
@@ -278,6 +282,82 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
             </div>
           </div>
         </div>
+
+        {/* Tag Filter Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowTagMenu(!showTagMenu)}
+            className={`flex items-center gap-2.5 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 border ${
+              selectedTag 
+                ? 'bg-brand-50 border-brand-200 text-brand-700 ring-4 ring-brand-500/5' 
+                : 'bg-white/60 border-transparent text-gray-600 hover:bg-white hover:shadow-sm'
+            }`}
+          >
+            <Tag className={`w-4 h-4 ${selectedTag ? 'text-brand-500' : 'text-gray-400'}`} />
+            <span>{selectedTag || 'All Labels'}</span>
+            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showTagMenu ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showTagMenu && (
+            <>
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setShowTagMenu(false)}
+              />
+              <div className="absolute top-full left-0 mt-3 w-64 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl z-50 p-2 animate-scale-in">
+                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                  Filter by Tag
+                </div>
+                
+                <button
+                  onClick={() => {
+                    setSelectedTag(null);
+                    setShowTagMenu(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    selectedTag === null ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-3.5 h-3.5 opacity-50" />
+                    All Labels
+                  </div>
+                  {selectedTag === null && <Check className="w-4 h-4" />}
+                </button>
+
+                <div className="my-2 border-t border-gray-50" />
+
+                <div className="max-h-60 overflow-y-auto custom-scrollbar space-y-1">
+                  {allTags.length > 0 ? (
+                    allTags.map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={() => {
+                          setSelectedTag(tag);
+                          setShowTagMenu(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                          selectedTag === tag ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-brand-400 shadow-sm" />
+                          {tag}
+                        </div>
+                        {selectedTag === tag && <Check className="w-4 h-4" />}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-3 py-8 text-center">
+                      <Tag className="w-8 h-8 text-gray-100 mx-auto mb-2" />
+                      <p className="text-xs text-gray-400">No tags found in this project</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -285,11 +365,12 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
           const columnTasks = tasks.filter((task) => {
             const matchesStatus = task.status === column.status;
             const matchesUser = filterUserId === null || task.assigned_to === filterUserId;
+            const matchesTag = selectedTag === null || task.tags?.includes(selectedTag);
             const matchesSearch = !searchQuery || 
               task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
               task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
               task.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-            return matchesStatus && matchesUser && matchesSearch;
+            return matchesStatus && matchesUser && matchesTag && matchesSearch;
           });
           const isDropTarget = dragOverColumn === column.status;
 
