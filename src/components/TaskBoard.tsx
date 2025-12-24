@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase, Project, Task, Profile } from '../lib/supabase';
-import { Plus } from 'lucide-react';
+import { supabase, Project, Task, Profile, ProjectMember } from '../lib/supabase';
+import { Plus, Check, Search, X, Users } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { CreateTaskModal } from './CreateTaskModal';
 import { EditTaskModal } from './EditTaskModal';
@@ -17,10 +17,17 @@ type TaskWithProfile = Task & {
   creator_profile?: Profile;
 };
 
+type MemberWithProfile = ProjectMember & {
+  profile: Profile;
+};
+
 export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
   const { profile } = useAuth();
   const { showToast } = useToast();
   const [tasks, setTasks] = useState<TaskWithProfile[]>([]);
+  const [members, setMembers] = useState<MemberWithProfile[]>([]);
+  const [filterUserId, setFilterUserId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<TaskWithProfile | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<Task['status']>('todo');
@@ -30,6 +37,7 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
 
   useEffect(() => {
     loadTasks();
+    loadMembers();
 
     const channel = supabase
       .channel('tasks')
@@ -82,6 +90,25 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
       console.error('Error loading tasks:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('project_members')
+        .select(`
+          *,
+          profile:profiles(*)
+        `)
+        .eq('project_id', project.id);
+
+      if (error) throw error;
+      if (data) {
+        setMembers(data as MemberWithProfile[]);
+      }
+    } catch (error) {
+      console.error('Error loading members:', error);
     }
   };
 
@@ -164,10 +191,106 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col lg:flex-row items-center gap-4 bg-white/40 backdrop-blur-xl p-3 rounded-3xl border border-white/50 shadow-xl shadow-brand-500/5">
+        {/* Search Input Group */}
+        <div className="relative flex-1 w-full group">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-brand-50 rounded-xl group-focus-within:bg-brand-500 group-focus-within:text-white transition-all duration-300">
+            <Search className="w-4 h-4 text-brand-500 group-focus-within:text-white" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search tasks, descriptions, or tags..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-14 pr-12 py-3.5 bg-white/60 border border-transparent rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:bg-white focus:border-brand-500/20 transition-all duration-300 placeholder:text-gray-400 shadow-inner"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-all active:scale-90"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Filter Section */}
+        <div className="flex items-center gap-4 bg-white/60 p-1.5 rounded-2xl border border-white/80 shadow-sm w-full lg:w-auto overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 px-3 border-r border-gray-100">
+            <Users className="w-4 h-4 text-gray-400" />
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Team</span>
+          </div>
+
+          <div className="flex items-center gap-2 pr-1">
+            {/* All Tasks Toggle */}
+            <button
+              onClick={() => setFilterUserId(null)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap ${
+                filterUserId === null 
+                  ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30 ring-4 ring-brand-500/10 scale-105' 
+                  : 'text-gray-500 hover:bg-white hover:text-gray-700 hover:shadow-sm'
+              }`}
+            >
+              Everyone
+            </button>
+
+            <div className="w-px h-6 bg-gray-100 mx-1 opacity-50" />
+
+            {/* Overlapping Avatars */}
+            <div className="flex -space-x-3 hover:space-x-1 transition-all duration-500 items-center px-2">
+              {members.map((member) => (
+                <button
+                  key={member.user_id}
+                  onClick={() => setFilterUserId(filterUserId === member.user_id ? null : member.user_id)}
+                  className={`relative group/filter w-10 h-10 rounded-full border-2 transition-all duration-300 hover:z-50 hover:-translate-y-1 ${
+                    filterUserId === member.user_id 
+                      ? 'border-brand-500 ring-4 ring-brand-500/20 z-40 scale-110 shadow-lg' 
+                      : 'border-white z-0'
+                  }`}
+                >
+                  <div 
+                    className="w-full h-full rounded-full flex items-center justify-center text-[11px] text-white overflow-hidden shadow-inner"
+                    style={{ backgroundColor: member.profile.avatar_color }}
+                  >
+                    {member.profile.avatar_url ? (
+                      <img src={member.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      member.profile.full_name.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  
+                  {/* Premium Popover-style Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-2 bg-gray-900/90 backdrop-blur-md text-white text-[10px] font-bold rounded-xl opacity-0 scale-50 pointer-events-none group-hover/filter:opacity-100 group-hover/filter:scale-100 transition-all duration-300 z-[100] shadow-2xl border border-white/10 min-w-[100px] text-center">
+                    <p className="truncate">{member.user_id === profile?.id ? 'Me (Assigned)' : member.profile.full_name}</p>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900/90 rotate-45 -translate-y-1" />
+                  </div>
+
+                  {/* Active Indicator Dot */}
+                  {filterUserId === member.user_id && (
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-brand-500 rounded-full border-2 border-white flex items-center justify-center shadow-lg animate-bounce-in">
+                      <Check className="w-2.5 h-2.5 text-white" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {columns.map((column) => {
-          const columnTasks = tasks.filter((task) => task.status === column.status);
+          const columnTasks = tasks.filter((task) => {
+            const matchesStatus = task.status === column.status;
+            const matchesUser = filterUserId === null || task.assigned_to === filterUserId;
+            const matchesSearch = !searchQuery || 
+              task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              task.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+            return matchesStatus && matchesUser && matchesSearch;
+          });
           const isDropTarget = dragOverColumn === column.status;
 
           return (
