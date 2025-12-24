@@ -304,7 +304,7 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
                 className="fixed inset-0 z-40" 
                 onClick={() => setShowTagMenu(false)}
               />
-              <div className="absolute top-full left-0 mt-3 w-64 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl z-50 p-2 animate-scale-in">
+              <div className="absolute top-full right-0 mt-3 w-64 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl z-50 p-2 animate-scale-in origin-top-right">
                 <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
                   Filter by Tag
                 </div>
