@@ -4,7 +4,6 @@ import { Plus, Check, Search, X, Users, Tag, ChevronDown } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { CreateTaskModal } from './CreateTaskModal';
 import { EditTaskModal } from './EditTaskModal';
-import { RealtimeStatus } from './RealtimeStatus';
 import { useAuth } from '../lib/auth';
 import { useToast } from '../lib/toast';
 
@@ -378,9 +377,6 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
             </>
           )}
         </div>
-
-        {/* Real-time Status Indicator */}
-        <RealtimeStatus />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
