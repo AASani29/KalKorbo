@@ -4,6 +4,7 @@ import { Plus, Check, Search, X, Users, Tag, ChevronDown } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { CreateTaskModal } from './CreateTaskModal';
 import { EditTaskModal } from './EditTaskModal';
+import { RealtimeStatus } from './RealtimeStatus';
 import { useAuth } from '../lib/auth';
 import { useToast } from '../lib/toast';
 
@@ -41,8 +42,13 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
     loadTasks();
     loadMembers();
 
+    // Create a unique channel name for this project
+    const channelName = `tasks:${project.id}`;
+    
+    console.log(`[TaskBoard] Setting up real-time subscription for project: ${project.id}`);
+
     const channel = supabase
-      .channel('tasks')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -51,13 +57,27 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
           table: 'tasks',
           filter: `project_id=eq.${project.id}`,
         },
-        () => {
+        (payload) => {
+          console.log('[TaskBoard] Real-time update received:', payload);
           loadTasks();
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[TaskBoard] ✅ Real-time subscription active');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('[TaskBoard] ❌ Real-time subscription error:', err);
+          showToast('error', 'Real-time updates unavailable. Please refresh to see latest changes.');
+        } else if (status === 'TIMED_OUT') {
+          console.error('[TaskBoard] ⏱️ Real-time subscription timed out');
+          showToast('warning', 'Connection slow. Updates may be delayed.');
+        } else {
+          console.log('[TaskBoard] Real-time status:', status);
+        }
+      });
 
     return () => {
+      console.log(`[TaskBoard] Cleaning up real-time subscription for project: ${project.id}`);
       supabase.removeChannel(channel);
     };
   }, [project.id]);
@@ -358,6 +378,9 @@ export function TaskBoard({ project, initialTaskId = null }: TaskBoardProps) {
             </>
           )}
         </div>
+
+        {/* Real-time Status Indicator */}
+        <RealtimeStatus />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
